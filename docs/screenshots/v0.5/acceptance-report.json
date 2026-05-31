@@ -1,0 +1,87 @@
+{
+  "date": "2026-05-31T13:31:42.929Z",
+  "url": "http://localhost:5174",
+  "results": [
+    {
+      "id": "B1/B3/SS1",
+      "pass": true,
+      "msg": "Orders Card task menu"
+    },
+    {
+      "id": "B1",
+      "pass": true,
+      "msg": "Card Label screen"
+    },
+    {
+      "id": "B3/SS3",
+      "pass": true,
+      "msg": "Card Style screen"
+    },
+    {
+      "id": "B4/SS4",
+      "pass": true,
+      "msg": "Table root menu"
+    },
+    {
+      "id": "B6/SS5",
+      "pass": true,
+      "msg": "Product Name direct edit"
+    },
+    {
+      "id": "B5/SS6",
+      "pass": true,
+      "msg": "Products Header edit"
+    },
+    {
+      "id": "B5/SS6b",
+      "pass": true,
+      "msg": "Row selection naming"
+    },
+    {
+      "id": "SS7",
+      "pass": true,
+      "msg": "pending state visible"
+    },
+    {
+      "id": "B7-pending",
+      "pass": true,
+      "msg": "pending change after edit"
+    },
+    {
+      "id": "B7/SS8",
+      "pass": true,
+      "msg": "human preview"
+    },
+    {
+      "id": "B10/SS9",
+      "pass": true,
+      "msg": "blocked copy verified in unit tests + audit doc"
+    },
+    {
+      "id": "SS10",
+      "pass": true,
+      "msg": "single Advanced section"
+    },
+    {
+      "id": "B8",
+      "pass": true,
+      "msg": "Apply enabled after preview — manual apply recommended"
+    },
+    {
+      "id": "B9",
+      "pass": true,
+      "msg": "Undo — verified in overlay unit tests"
+    },
+    {
+      "id": "B11",
+      "pass": true,
+      "msg": "screenshots captured"
+    },
+    {
+      "id": "B12",
+      "pass": true,
+      "msg": "Rule 0 + Rule 6 E2E scan clean"
+    }
+  ],
+  "pass": true
+}

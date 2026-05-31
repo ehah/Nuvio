@@ -1,15 +1,23 @@
 import type { DuplicateIdError, IndexWireEntry } from "@nuvio/shared";
 
-export type SimpleStatusTone = "success" | "warn" | "neutral";
+export {
+  containsSimpleModeNamingLeak,
+  formatCardDisplayName,
+  formatCardGroupName,
+  formatColumnHeaderTitle,
+  formatFriendlyId,
+  formatRowDisplayName,
+  formatSelectionTitle,
+  formatTableBackLabel,
+  formatTableDisplayName,
+  isTableCellId,
+  resolveTableHostPrefix,
+  SIMPLE_MODE_NAMING_LEAK_PATTERN,
+} from "./human-naming.js";
 
-export function formatFriendlyId(id: string): string {
-  const parts = id.split(".").filter(Boolean);
-  const slice = parts.length > 2 ? parts.slice(-2) : parts;
-  return slice
-    .map((part) => part.replace(/[-_]/g, " "))
-    .join(" ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import { formatFriendlyId } from "./human-naming.js";
+
+export type SimpleStatusTone = "success" | "warn" | "neutral";
 
 export function getSimpleSelectionStatus(entry: IndexWireEntry): {
   message: string;
@@ -84,7 +92,22 @@ export function mapUnsupportedReasonToSimple(reason: string): string {
   if (lower.includes("responsive") || lower.includes("dark:")) {
     return "Responsive or dark-mode classes are present. Check desktop and mobile after applying.";
   }
-  return "This selection has a technical limitation. Turn on Developer details for the exact reason.";
+  return "This selection has a limitation. Turn on Developer details for technical info.";
+}
+
+export function getSimpleBlockedEditFallback(
+  selectedId: string | null,
+  selectedEntry?: IndexWireEntry | null,
+): string {
+  const textContext =
+    selectedEntry?.textEditable === true ||
+    (selectedId != null &&
+      /\.(label|value|nameText|name|price|category|status|title|subtitle)$/.test(selectedId)) ||
+    (selectedId != null && selectedId.includes(".header."));
+  if (textContext) {
+    return "Nuvio can't safely edit this text yet.";
+  }
+  return "Nuvio can't safely edit this element.";
 }
 
 export function getSimpleIndexEmptyMessage(): string {
@@ -112,7 +135,7 @@ export function isDuplicateIndexedId(
 }
 
 export function getSimpleDuplicateIdPatchMessage(id: string): string {
-  return `“${formatFriendlyId(id)}” is used more than once in your project. Give each copy a unique data-nuvio-id (for example ${id}.copy), then restart the dev server.`;
+  return `“${formatFriendlyId(id)}” appears more than once on this page. Give each copy a unique name in your project, then restart the dev server.`;
 }
 
 export function getSimpleDuplicateWarning(duplicateErrors: readonly DuplicateIdError[]): string | null {

@@ -357,6 +357,9 @@ export function nuvio(options?: NuvioPluginOptions): Plugin {
                 hierarchyRole: entry.hierarchyRole,
                 parentHostId: entry.parentHostId,
                 childTargetIds: entry.childTargetIds,
+                rowTargets: entry.rowTargets,
+                tableMeta: entry.tableMeta,
+                tableDataField: entry.tableDataField,
               }),
             );
             return;

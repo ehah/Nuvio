@@ -4,22 +4,21 @@ export default function App(): ReactElement {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <main className="mx-auto max-w-xl space-y-16 px-6 py-20">
-        <section className="space-y-3">
+        <section className="space-y-3" data-nuvio-id="demo.hero.section">
           <h1
             className="text-3xl tracking-tight font-bold"
             data-nuvio-id="demo.hero.title"
           >
-            Nuvio v1.0
+            Nuvio
           </h1>
           <p
             className="leading-relaxed text-slate-400"
             data-nuvio-id="demo.hero.lead"
           >
-            <strong className="font-medium text-slate-300">Phase 3–4</strong> —
-            alpha property controls plus Phase 4 layout/effects (alignment, gap,
-            width, opacity, shadow, …), Validate → Apply to disk with change
-            change summary, in-memory Undo, and a dev-time source index over{" "}
-            <span className="font-mono text-slate-300">data-nuvio-id</span>.
+            Click any element, pick what you want to change, then{" "}
+            <strong className="font-medium text-slate-300">Preview Changes</strong> and{" "}
+            <strong className="font-medium text-slate-300">Apply to Code</strong> — no
+            React or Tailwind knowledge required.
           </p>
         </section>
 
@@ -28,7 +27,7 @@ export default function App(): ReactElement {
             className="text-base font-bold text-slate-300"
             data-nuvio-id="demo.section.features.title"
           >
-            Haider Ali
+            Feature cards
           </h2>
           <div
             className="flex flex-col gap-3 sm:flex-row"
@@ -38,13 +37,13 @@ export default function App(): ReactElement {
               className="flex-1 rounded-lg border border-slate-800 p-4 bg-slate-900 m-4"
               data-nuvio-id="demo.features.card.fast"
             >
-              This is Card 2
+              Fast edits
             </div>
             <div
               className="flex-1 rounded-lg border border-slate-800 bg-slate-900/50 p-4 m-4"
               data-nuvio-id="demo.features.card.stable"
             >
-              This is card 1002
+              Stable patches
             </div>
           </div>
         </section>
@@ -54,28 +53,14 @@ export default function App(): ReactElement {
             className="text-lg font-medium rounded-md text-slate-200"
             data-nuvio-id="demo.section.pricing.title"
           >
-            Pricing
+            Try a button
           </h2>
           <button
             type="button"
             className="text-sm font-medium text-white hover:bg-sky-500 rounded-xl p-2 bg-fuchsia-400"
             data-nuvio-id="demo.pricing.cta"
           >
-            Button 1
-          </button>
-          <button
-            type="button"
-            className="rounded-md text-sm font-medium text-white hover:bg-sky-500 gap-4 p-2 m-4 bg-amber-950"
-            data-nuvio-id="demo.pricing.cta.copy"
-          >
-            Button 2
-          </button>
-          <button
-            type="button"
-            className="rounded-md text-sm font-medium text-white hover:bg-sky-500 gap-4 px-4 py-2 m-2 bg-slate-900"
-            data-nuvio-id="demo.pricing.cta.copy.copy"
-          >
-            Button 3
+            Get started
           </button>
         </section>
 
@@ -84,7 +69,7 @@ export default function App(): ReactElement {
             className="text-xs text-slate-500 text-left"
             data-nuvio-id="demo.footer.note"
           >
-            Reference demo — not production UI.
+            Reference demo — open the Nuvio panel and edit without touching your editor.
           </p>
         </footer>
       </main>

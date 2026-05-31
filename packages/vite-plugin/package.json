@@ -1,6 +1,6 @@
 {
   "name": "@nuvio/vite-plugin",
-  "version": "0.2.0-alpha.0",
+  "version": "0.5.0",
   "description": "Nuvio Vite plugin: dev WebSocket, source index for data-nuvio-id, secure patch writes.",
   "license": "MIT",
   "repository": {
@@ -20,13 +20,17 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./dev-session": {
+      "types": "./dist/nuvio-dev-session.d.ts",
+      "import": "./dist/nuvio-dev-session.js"
     }
   },
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --clean --external vite --external @nuvio/shared --external @nuvio/ast-engine",
+    "build": "tsup src/index.ts src/nuvio-dev-session.ts --format esm --dts --clean --external vite --external @nuvio/shared --external @nuvio/ast-engine",
     "prepare": "pnpm run build",
     "prepublishOnly": "pnpm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",

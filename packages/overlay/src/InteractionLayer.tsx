@@ -20,6 +20,8 @@ export type InteractionLayerProps = {
   textTargets?: readonly TextWireTarget[];
   activeTextTargetKey?: string | null;
   hoverTextTargetKey?: string | null;
+  /** When true, only outline the selected id — no multi text-target hints. */
+  suppressTextTargetHints?: boolean;
 };
 
 function isUnderOverlayChrome(
@@ -75,6 +77,7 @@ export function InteractionLayer({
   textTargets = [],
   activeTextTargetKey = null,
   hoverTextTargetKey = null,
+  suppressTextTargetHints = false,
 }: InteractionLayerProps): ReactElement | null {
   const [hoverId, setHoverId] = useState<string | null>(null);
 
@@ -131,6 +134,7 @@ export function InteractionLayer({
     }
 
     const showTargetHints =
+      !suppressTextTargetHints &&
       textTargetHostId &&
       selectedId === textTargetHostId &&
       textTargets.length > 1;
@@ -158,7 +162,7 @@ export function InteractionLayer({
     textTargetHostId,
     textTargets,
     activeTextTargetKey,
-    hoverTextTargetKey,
+    suppressTextTargetHints,
   ]);
 
   return null;

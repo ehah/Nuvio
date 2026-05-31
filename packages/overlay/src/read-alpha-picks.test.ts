@@ -29,6 +29,32 @@ describe("readAlphaPicksFromClassName", () => {
     expect(readAlphaPicksFromClassName("").fontSize).toBe("");
   });
 
+  it("reads responsive and variant-prefixed colors at active breakpoint", () => {
+    const atXl = readAlphaPicksFromClassName(
+      "rounded-2xl border border-gray-200 bg-white xl:bg-red-100 dark:bg-white/[0.03]",
+      "xl",
+    );
+    expect(atXl.bgColor).toBe("bg-red-100");
+    expect(atXl.rounded).toBe("rounded-2xl");
+    expect(atXl.borderColor).toBe("border-gray-200");
+
+    const atBase = readAlphaPicksFromClassName(
+      "rounded-2xl border border-gray-200 bg-white xl:bg-red-100",
+      "base",
+    );
+    expect(atBase.bgColor).toBe("bg-white");
+  });
+
+  it("reads custom text size and palette colors not in static allowlists", () => {
+    const picks = readAlphaPicksFromClassName(
+      "mt-2 font-bold text-title-sm xl:text-red-600 text-lime-500",
+      "xl",
+    );
+    expect(picks.fontWeight).toBe("font-bold");
+    expect(picks.fontSize).toBe("text-title-sm");
+    expect(picks.textColor).toBe("text-red-600");
+  });
+
   it("reads Step 6 layout/typography/visual picks", () => {
     const picks = readAlphaPicksFromClassName(
       "flex-col justify-between items-center grid-cols-3 leading-snug tracking-wide border-2 border-slate-700 ring-2 ring-sky-500 px-6 py-4 my-2",

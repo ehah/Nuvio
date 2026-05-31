@@ -4,6 +4,109 @@ All notable changes to published `@nuvio/*` packages are documented here. This p
 
 ## [Unreleased]
 
+## [0.5.0-beta.0] — 2026-05-31 (Cards + Tables beta — Rule 5 Simple Mode)
+
+Beta per [nuvio_v0.5.0.md](docs/nuvio_v0.5.0.md) §18.1.
+
+### Added
+
+- **Rule 5 Simple Mode:** three-question screens (title → controls → Preview/Apply/Undo); single **Advanced** section.
+- **Human titles:** Product Name, Card Label, Table Title (not raw ids or row modes).
+- **Back navigation:** `← Recent Orders Table`, `← Orders Card`, `← Card Options`.
+- **Quick Style** chips for text edits; **Responsive preview** (Desktop/Mobile) in Advanced.
+- **`simple-mode-nav.ts`**, **`simple-mode-actions.ts`**, **`getSimpleBlockedEditFallback`**.
+- **Step 1 visibility audit:** [SIMPLE_MODE_VISIBILITY_AUDIT.md](docs/SIMPLE_MODE_VISIBILITY_AUDIT.md) + automated tests.
+- **Beta acceptance script:** `scripts/v05-beta-acceptance.mjs` (screenshots SS1–SS10).
+
+### Changed
+
+- Pending changes UI: compact “No pending changes” / “1 pending change” (no empty preview box).
+- Table onboarding hint only at table root menu — not on cell/header sub-screens.
+- Blocked copy: “Nuvio can't safely edit this text yet.” for text contexts.
+
+### Verification
+
+- `pnpm dogfood` green (82+ overlay tests).
+- [DOGFOOD.md](docs/DOGFOOD.md) § v0.5.0-beta.0 signed.
+- Screenshots: [docs/screenshots/v0.5/](docs/screenshots/v0.5/).
+
+## [0.5.0] — 2026-05-31 (Vibe-coder task router — stable)
+
+Public release per [nuvio_v0.5.0.md](docs/nuvio_v0.5.0.md) §18.2.
+
+### Added
+
+- **Task router (stable modes):** Button, Form, Nav, Chart, and Section menus alongside Card + Table.
+- **Container guidance v2:** multi-choice (Heading, Description, Button, Card) instead of single CTA.
+- **Presets v2:** outcome families (Cleaner, Compact, Elevated, text/button/section presets) with context filtering.
+- **TailAdmin P-C–P-F instrumentation:** Monthly Target, Demographic card, form label/input, `nav.dashboard`.
+- **Simple Mode polish:** width control in button tasks; outline hides developer filter chips.
+
+### Changed
+
+- Simple Mode actions: **Preview Changes** / **Apply to Code** (protocol unchanged).
+- **Copy Fix Prompt** branding; human preview with no Tailwind tokens in Simple Mode.
+- Demo app copy updated for 10-minute onboarding path (S8).
+
+### Verification
+
+- `pnpm dogfood` green.
+- Manual: [DOGFOOD.md](docs/DOGFOOD.md) § v0.5.0 stable.
+
+## [0.4.0] — 2026-05-31 (Phase C — Vibe-coder UX, Vite + Next)
+
+Stable Phase C per [nuvio_v0.4.0.md](docs/nuvio_v0.4.0.md) §11.2.
+
+### Added
+
+- **Onboarding guides** (simple mode): skippable welcome card + first-time contextual hints (buttons, tables, charts, containers). Persisted in `localStorage` (`nuvio:onboarding:v1`).
+- **`@nuvio/next`**: attach Nuvio dev WebSocket + source index to a Next.js **custom dev server** (App Router client components).
+- **`apps/next-dogfood`**: Next acceptance fixture with metric cards + §4.2 Recent Orders table.
+- **Component modes** (card/chart/nav/form/button) alongside table mode; **Outline search** in simple mode.
+- **Handoff action bar**: `suggestedAction` CTAs + **Open in editor** (`cursor://` / `NUVIO_EDITOR_URL`).
+- **Content-aware friendly labels** via index `textPreview`; full **style preset** utility mapping (shadow/border/gap).
+- **Index v4 polish**: `tableMeta.columns`, array declaration line, Tier C field suffixes (`price`, `category`).
+- Tests: plain-message map (16 reasons), container guidance, `source-index-table`.
+
+### Changed
+
+- **Protocol v7** (was v6 in alpha — table metadata unchanged, version bump for stable slice).
+- Simple-mode panel order: selection → guidance → component/table mode → Quick edits → device → outline.
+- Hide/Show moved into Quick edits (simple mode); table sub-target tabs sync with canvas selection.
+
+### Verification
+
+- `pnpm dogfood` green (Vite gate).
+- Next dogfood: `pnpm dev:next` + [DOGFOOD.md](docs/DOGFOOD.md) § v0.4.0 stable scenario 10.
+
+## [0.4.0-alpha.0] — 2026-05-29 (Phase C — Vibe-coder UX, Vite)
+
+Phase C per [nuvio_v0.4.0.md](docs/nuvio_v0.4.0.md) §11.1: simple-mode editing, table guidance, AI handoff on **Vite** (Next.js in stable `0.4.0`).
+
+### Added
+
+- **Quick edits** + collapsed **More styles**; plain patch messages; **container guidance** banner.
+- **Table mode** (section / column headers / rows); TailAdmin **Recent Orders** §4.2 instrumentation.
+- **Index v4** metadata: `rowTargets`, `tableMeta`, `tableDataField`; template `data-nuvio-id` expansion for `tableData.map`.
+- **`setTableDataField`** patch op for static row copy (Tier C).
+- **Outline** with friendly labels; **Copy fix context**; style presets + **layout helper** chips.
+- **Protocol v6** (table metadata + `setTableDataField`).
+
+### Changed
+
+- TailAdmin `TableCell` / `TableRow` forward native props so indexed ids exist in the DOM.
+- Dogfood docs: [DOGFOOD.md](docs/DOGFOOD.md) v0.4 checklist; [nuvioUser.md](docs/nuvioUser.md) table block.
+
+### Not in this release
+
+- `@nuvio/next` adapter (target **0.4.0** stable).
+- Open-in-editor links; opt-in telemetry implementation.
+
+### Verification
+
+- `pnpm dogfood` green.
+- Manual TailAdmin pass: [DOGFOOD.md](docs/DOGFOOD.md) § v0.4.0-alpha.0.
+
 ## [0.3.0-alpha.0] — 2026-05-28 (Phase B — stack mastery alpha)
 
 Phase B per [nuvio_v0.3.0.md](docs/nuvio_v0.3.0.md): hierarchy-first targeting, Tailwind depth, responsive breakpoint-aware patching, and hardening gates on real dashboard fixtures.

@@ -199,9 +199,24 @@ function collectChildHostIds(openingPath: NodePath<JSXOpeningElement>, id: strin
   return [...childIds].sort();
 }
 
-function inferHierarchyRole(ctx: AnalyzeHostContext): "section" | "card" | "form" | "group" | "layout" | "text" | "button" | "input" | "media" | "unknown" {
+function inferHierarchyRole(
+  ctx: AnalyzeHostContext,
+  hostId?: string,
+): "section" | "card" | "table" | "form" | "group" | "layout" | "text" | "button" | "input" | "media" | "unknown" {
   const tag = ctx.tagName.toLowerCase();
   const cls = ctx.classNameValue ?? "";
+  const id = hostId ?? "";
+  if (
+    id.endsWith(".table") ||
+    id.endsWith(".section") ||
+    id.includes(".header.") ||
+    /\.row\./.test(id)
+  ) {
+    return "table";
+  }
+  if (tag.includes("table")) {
+    return "table";
+  }
   if (tag === "form") {
     return "form";
   }
@@ -277,21 +292,21 @@ export function computeRiskMetadata(ctx: AnalyzeHostContext): {
   if (ctx.classNameComputed) {
     setRisk("unsupported");
     unsupportedReasons.push(
-      "className is not a string literal â€” only literal className strings are patchable in this version.",
+      "className is not a string literal — only literal className strings are patchable in this version.",
     );
   }
 
   if (ctx.insideMap) {
     setRisk("caution");
     unsupportedReasons.push(
-      "Element is inside a .map() â€” text/class changes may affect every rendered item.",
+      "Element is inside a .map() — text/class changes may affect every rendered item.",
     );
   }
 
   if (!isNative) {
     setRisk("caution");
     unsupportedReasons.push(
-      "Custom React component â€” className must forward to a DOM node for visual changes.",
+      "Custom React component — className must forward to a DOM node for visual changes.",
     );
   }
 
@@ -305,7 +320,7 @@ export function computeRiskMetadata(ctx: AnalyzeHostContext): {
 
   if (ctx.hasLiteralClassName && ctx.classNameValue?.includes("dark:")) {
     setRisk("caution");
-    unsupportedReasons.push("Responsive/dark: utilities present â€” edit with care.");
+    unsupportedReasons.push("Responsive/dark: utilities present — edit with care.");
   }
 
   const structuralEditable =
@@ -362,7 +377,7 @@ export function buildIndexEntry(
     riskLevel: risk.riskLevel,
     unsupportedReasons: risk.unsupportedReasons,
     insideMap: ctx.insideMap,
-    hierarchyRole: inferHierarchyRole(ctx),
+    hierarchyRole: inferHierarchyRole(ctx, base.id),
     parentHostId,
     childTargetIds: childTargetIds.length > 0 ? childTargetIds : undefined,
     patchHostId,

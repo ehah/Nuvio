@@ -13,8 +13,11 @@ You only need this guide and a terminal. Copy the commands exactly.
 1. Run your app like normal (`pnpm dev`).
 2. Turn on **Edit** in the little Nuvio bar on the page.
 3. Click something on the page you marked as editable.
-4. Change text or styles in the side panel.
-5. Hit **Validate**, then **Apply** — your source files update.
+4. Change text or styles in the side panel — pick a **task** (Label, Card Style, Table Title, etc.) when prompted.
+5. Use **Quick Style** chips (Normal, Muted, Strong, Larger) for text — no need to know Tailwind.
+6. Hit **Preview Changes**, then **Apply to Code** — your source files update.
+
+**Simple Mode layout (v0.5):** each screen shows what you're editing, what you can change, and how to apply it. Device preview and more styles live under **Advanced** at the bottom. Turn on **Developer details** in the panel header only when you need file paths or technical diagnostics.
 
 **Important:** Nuvio only works while developing on your computer. It does not run in production builds.
 
@@ -133,6 +136,61 @@ Why this matters:
 - You can keep **Style target** on the card container for spacing/background edits.
 - Duplicate ids block writes. Every repeated card needs unique ids (`.copy`, `.copy2`, ...).
 
+### Table block (v0.4 — dashboards)
+
+Instrument the **whole** Recent Orders–style block, not only the scroll wrapper. Use **string literals** for section title and column headers. Forward `data-nuvio-id` on custom `TableCell` / `TableRow` components (spread props onto `<th>` / `<tr>`).
+
+```tsx
+const tableData = [
+  { id: 1, name: "MacBook Pro 13”", category: "Laptop", price: "$2399.00" },
+  // ...
+];
+
+export function RecentOrders() {
+  return (
+    <div data-nuvio-id="orders.section" className="rounded-2xl border ...">
+      <h3 data-nuvio-id="orders.title" className="...">
+        Recent Orders
+      </h3>
+      <div data-nuvio-id="orders.table" className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow data-nuvio-id="orders.header.row">
+              <TableCell isHeader data-nuvio-id="orders.header.products" className="...">
+                Products
+              </TableCell>
+              {/* orders.header.category, .price, .status */}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {tableData.map((product) => (
+              <TableRow
+                key={product.id}
+                data-nuvio-id={`orders.row.${product.id}`}
+                className="..."
+              >
+                <TableCell className="...">
+                  <p data-nuvio-id={`orders.row.${product.id}.nameText`} className="...">
+                    {product.name}
+                  </p>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
+```
+
+**In the editor (simple mode, no Developer details):**
+
+1. Click the table area → **Table mode** → pick **Section**, **Column headers**, or **Rows**.
+2. Edit title/header text in **Quick edits**.
+3. For row product names, select a row then edit text (updates `tableData` in source when indexed).
+4. Stuck? Use **Copy fix context** on the error banner.
+
 ---
 
 ## Step 5 — Run and try it
@@ -149,8 +207,8 @@ Open the URL it prints (often `http://localhost:5173`).
 2. Turn **Edit** **on**.
 3. Click an element you gave a `data-nuvio-id`.
 4. Change text or styles in the **Editor** panel.
-5. Click **Validate** (checks your change).
-6. Click **Apply** (writes to your code file).
+5. Click **Preview Changes** (checks your change).
+6. Click **Apply to Code** (writes to your code file).
 7. Wrong? Click **Undo last**.
 
 You should see the page update and your file change in the editor (Cursor/VS Code).
@@ -193,7 +251,7 @@ In `src/index.css`, make sure you have Tailwind’s three lines at the top:
 @tailwind utilities;
 ```
 
-Add at least one `data-nuvio-id` in `src/App.tsx`, run `pnpm dev`, and test **Edit → Validate → Apply**.
+Add at least one `data-nuvio-id` in `src/App.tsx`, run `pnpm dev`, and test **Edit → Preview Changes → Apply to Code**.
 
 ---
 
@@ -216,7 +274,7 @@ On **v0.2+** this is usually **not** a missing Tailwind `content` line. Try:
 
 If you are on **Nuvio 0.1.x**, add the overlay path to Tailwind `content` (see [COMPATIBILITY.md](./COMPATIBILITY.md)).
 
-### **Validate** or **Apply** is greyed out
+### **Preview Changes** or **Apply to Code** is greyed out
 
 - Turn **Edit** on first.
 - Click an element that has `data-nuvio-id`.
@@ -241,7 +299,7 @@ Try Nuvio — edit your React app in the browser while it runs locally.
 1) In your Vite + React + Tailwind project:
    pnpm add -D @nuvio/vite-plugin @nuvio/overlay
 
-2) Follow the simple guide (setup + Edit/Validate/Apply):
+2) Follow the simple guide (setup + Edit / Preview / Apply to Code):
    [paste link to this file in your repo]
 
 3) Packages on npm:
@@ -256,7 +314,7 @@ No Tailwind content hack for the overlay on v0.2+.
 1. Share the message above + link to this guide.
 2. Ask them to try a **fresh** Vite app first (section “Brand new test project”).
 3. Then try one real project.
-4. Ask: “Did Validate → Apply work?” and “What broke?”
+4. Ask: “Did Preview Changes → Apply to Code work?” and “What broke?”
 
 ---
 
@@ -267,10 +325,14 @@ No Tailwind content hack for the overlay on v0.2+.
 | Install | `pnpm add -D @nuvio/vite-plugin @nuvio/overlay` |
 | Start app | `pnpm dev` |
 | Enable editing | Nuvio chip → **Edit** on |
-| Save a change | **Validate** → **Apply** |
+| Save a change | **Preview Changes** → **Apply to Code** |
+| Style text quickly | **Quick Style** chips on Label / Value / table text screens |
+| Go back in a task | **← Orders Card** / **← Recent Orders Table** under the title |
 | Undo | **Undo last** on the chip |
 | Mark editable UI | `data-nuvio-id="something.unique"` on the tag |
+| Edit a dashboard table | Use §4.2 ids + Table mode in the panel |
 | Fix clipped UI | **Reset position** on chip/editor |
+| Copy context for Cursor | **Copy Fix Prompt** when apply is blocked |
 
 ---
 
@@ -281,3 +343,4 @@ No Tailwind content hack for the overlay on v0.2+.
 - Maintainer dogfood (v0.2 fixtures): [DOGFOOD.md](./DOGFOOD.md)
 - Dev-only behavior: [DEV_ONLY.md](./DEV_ONLY.md)
 - v0.2.0 engineering spec: [nuvio_v0.2.0.md](./nuvio_v0.2.0.md)
+- v0.4 vibe-coder spec (maintainers): [nuvio_v0.4.0.md](./nuvio_v0.4.0.md)

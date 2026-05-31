@@ -1,6 +1,16 @@
+import type { Breakpoint } from "@nuvio/shared";
 import type { AlphaStylePicks } from "./alpha-patch-ops.js";
 import { EMPTY_ALPHA_PICKS } from "./alpha-patch-ops.js";
 import { BACKGROUND_COLOR_VALUES, TEXT_COLOR_VALUES } from "./tailwind-color-options.js";
+import {
+  flattenTokensAtBreakpoint,
+  isBgColorUtility,
+  isBorderColorUtility,
+  isFontSizeUtility,
+  isRoundedUtility,
+  isTextColorUtility,
+  lastMatchingToken,
+} from "./tailwind-token-read.js";
 
 const FONT_SIZE = ["text-sm", "text-base", "text-lg", "text-xl", "text-2xl"] as const;
 const FONT_WEIGHT = ["font-medium", "font-semibold", "font-bold"] as const;
@@ -68,10 +78,6 @@ const OPACITY = [
 ] as const;
 const SHADOW = ["shadow-none", "shadow-sm", "shadow", "shadow-md", "shadow-lg", "shadow-xl"] as const;
 
-function tokenizeClassName(className: string): string[] {
-  return className.trim().split(/\s+/).filter(Boolean);
-}
-
 /** Last token in document order wins (Tailwind source order). */
 function lastLiteralMatch(tokens: readonly string[], candidates: readonly string[]): string {
   let hit = "";
@@ -81,6 +87,22 @@ function lastLiteralMatch(tokens: readonly string[], candidates: readonly string
     }
   }
   return hit;
+}
+
+/** Prefer allowlisted value; otherwise last token matching `matches`. */
+function lastPick(
+  tokens: readonly string[],
+  candidates: readonly string[],
+  matches?: (token: string) => boolean,
+): string {
+  const allowlisted = lastLiteralMatch(tokens, candidates);
+  if (allowlisted) {
+    return allowlisted;
+  }
+  if (matches) {
+    return lastMatchingToken(tokens, matches);
+  }
+  return "";
 }
 
 /** Match panel composite utilities like `px-4 py-2`. */
@@ -97,21 +119,24 @@ function lastCompositeMatch(tokens: readonly string[], composites: readonly stri
 
 /**
  * Map a host element's `class` attribute to staged pick values (panel dropdowns).
- * Only recognizes utilities present in the Editor panel allowlists.
+ * Resolves responsive (`md:`) and variant (`dark:`) prefixes for the active breakpoint.
  */
-export function readAlphaPicksFromClassName(className: string): AlphaStylePicks {
-  const tokens = tokenizeClassName(className);
+export function readAlphaPicksFromClassName(
+  className: string,
+  activeBreakpoint: Breakpoint = "base",
+): AlphaStylePicks {
+  const tokens = flattenTokensAtBreakpoint(className, activeBreakpoint);
   if (tokens.length === 0) {
     return { ...EMPTY_ALPHA_PICKS };
   }
   return {
-    fontSize: lastLiteralMatch(tokens, FONT_SIZE),
+    fontSize: lastPick(tokens, FONT_SIZE, isFontSizeUtility),
     fontWeight: lastLiteralMatch(tokens, FONT_WEIGHT),
     lineHeight: lastLiteralMatch(tokens, LINE_HEIGHT),
     letterSpacing: lastLiteralMatch(tokens, LETTER_SPACING),
     textAlign: lastLiteralMatch(tokens, TEXT_ALIGN),
-    textColor: lastLiteralMatch(tokens, TEXT_COLOR),
-    bgColor: lastLiteralMatch(tokens, BG_COLOR),
+    textColor: lastPick(tokens, TEXT_COLOR, isTextColorUtility),
+    bgColor: lastPick(tokens, BG_COLOR, isBgColorUtility),
     padding: lastCompositeMatch(tokens, PADDING) || lastLiteralMatch(tokens, PADDING),
     paddingX: lastLiteralMatch(tokens, PADDING_X),
     paddingY: lastLiteralMatch(tokens, PADDING_Y),
@@ -123,9 +148,9 @@ export function readAlphaPicksFromClassName(className: string): AlphaStylePicks 
     justify: lastLiteralMatch(tokens, JUSTIFY),
     items: lastLiteralMatch(tokens, ITEMS),
     gridCols: lastLiteralMatch(tokens, GRID_COLS),
-    rounded: lastLiteralMatch(tokens, ROUNDED),
+    rounded: lastPick(tokens, ROUNDED, isRoundedUtility),
     borderWidth: lastLiteralMatch(tokens, BORDER_WIDTH),
-    borderColor: lastLiteralMatch(tokens, BORDER_COLOR),
+    borderColor: lastPick(tokens, BORDER_COLOR, isBorderColorUtility),
     ringWidth: lastLiteralMatch(tokens, RING_WIDTH),
     ringColor: lastLiteralMatch(tokens, RING_COLOR),
     width: lastLiteralMatch(tokens, WIDTH),
@@ -137,8 +162,11 @@ export function readAlphaPicksFromClassName(className: string): AlphaStylePicks 
   };
 }
 
-export function readAlphaPicksFromElement(el: HTMLElement): AlphaStylePicks {
-  return readAlphaPicksFromClassName(el.className);
+export function readAlphaPicksFromElement(
+  el: HTMLElement,
+  activeBreakpoint: Breakpoint = "base",
+): AlphaStylePicks {
+  return readAlphaPicksFromClassName(el.className, activeBreakpoint);
 }
 
 export function alphaPicksDiffer(a: AlphaStylePicks, b: AlphaStylePicks): boolean {

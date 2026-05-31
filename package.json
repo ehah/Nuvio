@@ -3,12 +3,15 @@
   "private": true,
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "build": "pnpm -r --filter \"./packages/**\" run build",
-    "typecheck": "pnpm -r run typecheck",
+    "build": "pnpm -r --filter \"!./packages/next\" --filter \"./packages/**\" run build",
+    "typecheck": "pnpm -r --filter \"!./apps/next-dogfood\" run typecheck",
     "test": "pnpm -r run test",
     "dev": "pnpm build && pnpm --filter @nuvio/demo-app dev",
     "dev:tailadmin": "pnpm build && pnpm --filter @nuvio/tailadmin-dogfood dev",
+    "dev:next": "pnpm build && pnpm --filter @nuvio/next-dogfood dev",
     "dogfood": "pnpm build && pnpm typecheck && pnpm test && pnpm --filter @nuvio/demo-app build",
+    "dogfood:next": "pnpm --filter @nuvio/next-dogfood build",
+    "v05:acceptance": "node scripts/v05-beta-acceptance.mjs --url=http://localhost:5173",
     "publish:alpha": "pnpm -r publish --filter \"./packages/*\" --access public --tag alpha",
     "publish:stable": "pnpm -r publish --filter \"./packages/*\" --access public"
   },

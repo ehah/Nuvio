@@ -14,14 +14,19 @@ function hexForUtility(value: string, options: readonly ColorOption[]): string {
   if (hit) {
     return hit.hex;
   }
-  const m = value.match(/^(text|bg)-([a-z]+)-(\d+)$/);
+  const base = value.replace(/\/(?:\d+|\[[\d.]+\])$/, "");
+  const baseHit = options.find((o) => o.value === base);
+  if (baseHit) {
+    return baseHit.hex;
+  }
+  const m = base.match(/^(text|bg)-([a-z]+)-(\d+)$/);
   if (m) {
     return TAILWIND_PALETTE_HEX[m[2]]?.[m[3]] ?? "#64748b";
   }
-  if (value === "text-white" || value === "bg-white") {
+  if (base === "text-white" || base === "bg-white") {
     return "#ffffff";
   }
-  if (value === "text-black" || value === "bg-black") {
+  if (base === "text-black" || base === "bg-black") {
     return "#000000";
   }
   return "#64748b";
@@ -37,17 +42,25 @@ export function ColorPickerRow({
   onChange,
   options,
   utilityPrefix,
+  simpleMode = false,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   options: readonly ColorOption[];
   utilityPrefix: "text" | "bg";
+  /** Simple Mode: hide utility strings (Rule 0). */
+  simpleMode?: boolean;
 }): ReactElement {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const listId = useId();
   const swatchHex = hexForUtility(value, options);
+  const displayValue = simpleMode
+    ? value
+      ? options.find((o) => o.value === value)?.label ?? "Custom"
+      : "Default"
+    : value || "—";
 
   useEffect(() => {
     if (!open) {
@@ -111,8 +124,8 @@ export function ColorPickerRow({
             }}
             aria-hidden="true"
           />
-          <span className="nuvio-min-w-0 nuvio-truncate nuvio-text-mono nuvio-text-2xs">
-            {value || "—"}
+          <span className="nuvio-min-w-0 nuvio-truncate nuvio-text-2xs">
+            {displayValue}
           </span>
         </button>
 
@@ -123,10 +136,12 @@ export function ColorPickerRow({
             aria-label={`${label} palette`}
             className="nuvio-color-popover"
           >
-            <p className="nuvio-text-3xs nuvio-leading-snug nuvio-text-muted" style={{ marginBottom: 8 }}>
-              Tailwind palette — picks a utility class (e.g. {utilityPrefix}-sky-500), not a custom
-              hex value.
-            </p>
+            {!simpleMode ? (
+              <p className="nuvio-text-3xs nuvio-leading-snug nuvio-text-muted" style={{ marginBottom: 8 }}>
+                Tailwind palette — picks a utility class (e.g. {utilityPrefix}-sky-500), not a custom
+                hex value.
+              </p>
+            ) : null}
             <div className="nuvio-color-specials">
               {specials.map((o) => (
                 <button
@@ -166,14 +181,15 @@ export function ColorPickerRow({
                   {TAILWIND_COLOR_SHADES.map((shade) => {
                     const util = `${utilityPrefix}-${family}-${shade}`;
                     const hex = TAILWIND_PALETTE_HEX[family][String(shade)];
-                    const selected = value === util;
+                    const selected =
+                      value === util || value.replace(/\/(?:\d+|\[[\d.]+\])$/, "") === util;
                     return (
                       <button
                         key={util}
                         type="button"
                         role="option"
                         aria-selected={selected}
-                        title={util}
+                        title={simpleMode ? `${familyLabel(family)} ${shade}` : util}
                         className={`nuvio-palette-swatch ${
                           selected ? "nuvio-palette-swatch--selected" : ""
                         }`}

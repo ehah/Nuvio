@@ -961,6 +961,8 @@ export function NuvioDevShellInner(): ReactElement {
               indexedCount={knownIds.size}
               duplicateErrors={duplicateErrors}
               selectedId={selectedId}
+              selectedEntry={selectedEntry}
+              indexEntries={indexEntries}
               selectError={selectError}
               developerDetails={developerDetails}
             />
@@ -982,6 +984,7 @@ export function NuvioDevShellInner(): ReactElement {
         textTargets={selectedEntry?.textTargets}
         activeTextTargetKey={activeTextTargetKey}
         hoverTextTargetKey={hoverTextTargetKey}
+        suppressTextTargetHints={!developerDetails}
       />
       {shadowMount ? createPortal(chromeUi, shadowMount.mount) : chromeUi}
     </>

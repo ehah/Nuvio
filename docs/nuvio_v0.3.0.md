@@ -282,15 +282,18 @@ nuvio({
 
 ---
 
-## 6. v0.4.0 preview (do not implement in v0.3.0)
+## 6. v0.4.0 (deferred — see full spec)
+
+**Canonical plan:** [`docs/nuvio_v0.4.0.md`](nuvio_v0.4.0.md) — vibe-coder UX, Next.js, tree v2, AI handoff, Quick edits.
+
+Summary (do not implement in v0.3.0):
 
 | Track | Deliverable |
 | ----- | ----------- |
+| Experience | Quick edits, container guidance, tree v2, plain errors |
 | Next.js | `@nuvio/next` or plugin mode; **one** mode first (Pages **or** App Router client only) |
-| Examples | `apps/next-*-dogfood` |
-| Workflow | Open in Cursor, copy component context |
-| Tree | Hierarchical inspector from index |
-| Layout | Visual flex/grid helpers (source-backed) |
+| Workflow | Copy fix context for Cursor, optional open in editor |
+| Layout | Vibe-labeled flex/grid helpers (source-backed) |
 
 ---
 

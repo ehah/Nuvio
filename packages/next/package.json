@@ -1,0 +1,44 @@
+{
+  "name": "@nuvio/next",
+  "version": "0.4.0-alpha.0",
+  "description": "Nuvio Next.js dev adapter — attach WebSocket + source index to a custom dev server.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ehah/Nuvio.git",
+    "directory": "packages/next"
+  },
+  "keywords": ["nuvio", "next", "nextjs", "devtools", "react"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": ["dist", "README.md"],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm -w --filter @nuvio/vite-plugin exec tsup src/index.ts --format esm --dts --clean --external @nuvio/vite-plugin --external @nuvio/shared --external @nuvio/ast-engine",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "next": "^14.0.0 || ^15.0.0"
+  },
+  "dependencies": {
+    "@nuvio/vite-plugin": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.5",
+    "next": "^15.2.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.3"
+  }
+}

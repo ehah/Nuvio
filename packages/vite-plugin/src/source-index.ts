@@ -6,6 +6,11 @@ import type { JSXOpeningElement } from "@babel/types";
 import fg from "fast-glob";
 import type { DuplicateIdError, IndexWireEntry } from "@nuvio/shared";
 import { analyzeHost, buildIndexEntry, type ClassNameMode } from "./source-index-metadata.js";
+import { enrichTableIndexFromSource } from "./source-index-table.js";
+import {
+  expandTemplateNuvioIds,
+  extractRowKeysFromTableDataConst,
+} from "./source-index-template-ids.js";
 
 function getTraverseFn(): (ast: import("@babel/types").File, visitor: object) => void {
   if (typeof traverseImport === "function") {
@@ -51,6 +56,8 @@ export function extractIdsFromSource(
     return acc;
   }
 
+  const rowKeys = extractRowKeysFromTableDataConst(code);
+
   const traverseFn = getTraverseFn();
   traverseFn(ast, {
     JSXOpeningElement(p: NodePath<JSXOpeningElement>) {
@@ -85,12 +92,23 @@ export function extractIdsFromSource(
           );
         };
 
-        if (prop === "data-nuvio-id" && attr.value?.type === "StringLiteral") {
-          const id = attr.value.value.trim();
-          if (id) {
-            pushEntry(id);
+        if (prop === "data-nuvio-id") {
+          if (attr.value?.type === "StringLiteral") {
+            const id = attr.value.value.trim();
+            if (id) {
+              pushEntry(id);
+            }
+            continue;
           }
-          continue;
+          if (rowKeys.length > 0) {
+            const expanded = expandTemplateNuvioIds(attr, rowKeys);
+            for (const id of expanded) {
+              pushEntry(id);
+            }
+            if (expanded.length > 0) {
+              continue;
+            }
+          }
         }
 
         if (WRAPPER_TAGS.has(tagName) && prop === "id" && attr.value?.type === "StringLiteral") {
@@ -129,6 +147,7 @@ export function buildSourceIndex(
   const files = [...new Set(matched)];
 
   const byId = new Map<string, SourceIndexEntry[]>();
+  const fileToSource = new Map<string, string>();
 
   for (const file of files) {
     let code: string;
@@ -138,6 +157,7 @@ export function buildSourceIndex(
       parseErrors.push({ file, message: String(e) });
       continue;
     }
+    fileToSource.set(path.resolve(file), code);
 
     let occurrences: SourceIndexEntry[];
     try {
@@ -171,6 +191,8 @@ export function buildSourceIndex(
       entries.push(list[0]!);
     }
   }
+
+  enrichTableIndexFromSource(entries, fileToSource);
 
   entries.sort((a, b) => {
     const fa = a.file.localeCompare(b.file);

@@ -37,6 +37,8 @@ import { TextTargetPicker } from "./TextTargetPicker.js";
 import { resolveTextTargetElement } from "./text-target-dom.js";
 import {
   formatFriendlyId,
+  formatSelectionTitle,
+  getSimpleBlockedEditFallback,
   getSimpleDuplicateIdPatchMessage,
   getSimpleIndexEmptyMessage,
   getSimplePatchBlockedMessage,
@@ -60,6 +62,36 @@ import {
   formatPatchUserMessage,
   getIndexedSiblingMoveAvailability,
 } from "./sibling-move.js";
+import { formatPatchUserMessagePlain, getPlainPatchAction } from "./plain-patch-messages.js";
+import { formatPlainBreakpointLabel } from "./breakpoint-labels.js";
+import { ContainerGuidance } from "./container-guidance.js";
+import {
+  copyTextToClipboard,
+  MAKE_TABLE_EDITABLE_SNIPPET,
+} from "./fix-handoff.js";
+import { ComponentModePanel } from "./component-mode.js";
+import { detectTableMode } from "./table-panel.js";
+import { LAYOUT_HELPERS } from "./layout-helpers.js";
+import { presetsForContext, applyStylePresetToPicks, QUICK_TEXT_STYLE_PRESETS } from "./style-presets.js";
+import { HandoffActionBar } from "./handoff-actions.js";
+import { SimpleModeActionBar } from "./simple-mode-actions.js";
+import { OnboardingGuide } from "./OnboardingGuide.js";
+import { buildHumanPreviewLines, formatHumanPreviewBlock } from "./human-preview.js";
+import { mapSelectOptionsForSimpleMode, type SimpleOptionCategory } from "./simple-option-labels.js";
+import {
+  detectSimpleRouterMode,
+  useSimpleTaskRouter,
+} from "./task-router.js";
+import {
+  TableColumnHeaderPicker,
+  TableRowPicker,
+} from "./table-panel.js";
+import {
+  dismissGuide,
+  loadDismissedGuides,
+  type OnboardingGuideId,
+} from "./onboarding-storage.js";
+import { pickContextualGuide, shouldShowWelcome } from "./selection-guides.js";
 import { ColorPickerRow } from "./ColorPickerRow.js";
 import { BACKGROUND_COLOR_OPTIONS, TEXT_COLOR_OPTIONS } from "./tailwind-color-options.js";
 
@@ -119,17 +151,49 @@ function assignShellRef(
   (shellRef as MutableRefObject<HTMLElement | null>).current = el;
 }
 
+/** Ensure the live class token appears in the list so the select is not blank. */
+function withCurrentOption(
+  options: { value: string; label: string }[],
+  current: string,
+): { value: string; label: string }[] {
+  if (!current || options.some((o) => o.value === current)) {
+    return options;
+  }
+  return [...options, { value: current, label: current }];
+}
+
 function SelectRow({
   label,
   value,
   onChange,
   options,
+  developerDetails = true,
+  simpleCategory,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
+  developerDetails?: boolean;
+  simpleCategory?: SimpleOptionCategory;
 }): ReactElement {
+  const mapped =
+    simpleCategory && !developerDetails
+      ? mapSelectOptionsForSimpleMode(options, simpleCategory, false)
+      : options;
+  const resolvedOptions = withCurrentOption(mapped, value);
+  if (
+    !developerDetails &&
+    simpleCategory &&
+    value &&
+    !resolvedOptions.some((o) => o.value === value)
+  ) {
+    resolvedOptions.push({
+      value,
+      label: mapSelectOptionsForSimpleMode([{ value, label: value }], simpleCategory, false)[0]
+        ?.label ?? "Custom",
+    });
+  }
   return (
     <label className="nuvio-field-row">
       <span className="nuvio-label">{label}</span>
@@ -138,7 +202,7 @@ function SelectRow({
         onChange={(e) => onChange(e.target.value)}
         className="nuvio-control nuvio-select"
       >
-        {options.map((o) => (
+        {resolvedOptions.map((o) => (
           <option key={o.value || "__none"} value={o.value}>
             {o.label}
           </option>
@@ -207,6 +271,13 @@ export function PropertyPanelShell({
   const [picks, setPicks] = useState<AlphaStylePicks>(EMPTY_ALPHA_PICKS);
   const [textEditable, setTextEditable] = useState(true);
   const [textEditReason, setTextEditReason] = useState<string | null>(null);
+  const [dismissedGuides, setDismissedGuides] = useState<ReadonlySet<string>>(() =>
+    loadDismissedGuides(),
+  );
+
+  const dismissOnboardingGuide = useCallback((id: OnboardingGuideId) => {
+    setDismissedGuides(dismissGuide(id));
+  }, []);
 
   const setShellElement = useCallback(
     (el: HTMLElement | null) => {
@@ -247,6 +318,54 @@ export function PropertyPanelShell({
     () => (selectedId ? indexEntries.find((e) => e.id === selectedId) : undefined),
     [indexEntries, selectedId],
   );
+
+  const simpleRouterMode = useMemo(
+    () =>
+      !developerDetails && selectedEntry && selectedId
+        ? detectSimpleRouterMode(selectedEntry, selectedId, indexEntries)
+        : null,
+    [developerDetails, indexEntries, selectedEntry, selectedId],
+  );
+
+  const taskRouter = useSimpleTaskRouter({
+    mode: simpleRouterMode,
+    entry: selectedEntry,
+    indexEntries,
+    selectedId: selectedId ?? "",
+    onSelectId: onSelectIndexedId,
+  });
+
+  const panelControls = taskRouter.active ? taskRouter.controls : null;
+
+  const humanPreviewBlock = useMemo(() => {
+    if (developerDetails) {
+      return null;
+    }
+    return formatHumanPreviewBlock(
+      buildHumanPreviewLines({ baselineText, draftText, baselinePicks, draftPicks: picks }),
+    );
+  }, [baselinePicks, baselineText, developerDetails, draftText, picks]);
+
+  const previewButtonLabel = developerDetails ? "Validate" : "Preview Changes";
+  const applyButtonLabel = developerDetails ? "Apply" : "Apply to Code";
+  const simpleMode = !developerDetails;
+  const selectionTitle =
+    selectedId && selectedEntry
+      ? formatSelectionTitle(selectedId, selectedEntry, indexEntries)
+      : null;
+  const showEditSection =
+    selectedId &&
+    !missing &&
+    (developerDetails || !taskRouter.active || taskRouter.showTaskControls);
+  const showSimpleEditControls =
+    simpleMode && selectedId && !missing && (!taskRouter.active || taskRouter.showTaskControls);
+  const showQuickStyle =
+    showSimpleEditControls && (!panelControls || panelControls.showText);
+  const tableAtRootMenu =
+    taskRouter.active &&
+    simpleRouterMode === "table" &&
+    taskRouter.tableTask === "menu" &&
+    !taskRouter.isDirectTableFieldEdit;
 
   const textTargets = selectedEntry?.textTargets ?? [];
 
@@ -345,6 +464,14 @@ export function PropertyPanelShell({
           : textEl;
 
     if (textEl instanceof HTMLElement) {
+      const tableField = selectedEntry?.tableDataField;
+      if (tableField) {
+        const text = textEl.textContent?.trim() ?? "";
+        setTextEditable(true);
+        setTextEditReason(null);
+        setBaselineText(text);
+        setDraftText(text);
+      } else {
       const { text, textEditable: domEditable, reason } = readEditableTextFromElement(textEl);
       const indexAllowsText = activeTextTarget
         ? activeTextTarget.textEditable
@@ -359,6 +486,7 @@ export function PropertyPanelShell({
       );
       setBaselineText(text);
       setDraftText(text);
+      }
     } else {
       setTextEditable(false);
       setTextEditReason("Could not find this text on the page — try selecting it again.");
@@ -367,14 +495,25 @@ export function PropertyPanelShell({
     }
 
     if (styleEl instanceof HTMLElement) {
-      const fromClass = readAlphaPicksFromElement(styleEl);
+      const fromClass = readAlphaPicksFromElement(styleEl, activeBreakpoint);
       setBaselinePicks(fromClass);
       setPicks(fromClass);
     } else {
       setBaselinePicks(EMPTY_ALPHA_PICKS);
       setPicks(EMPTY_ALPHA_PICKS);
     }
-  }, [activeTextTarget, patchStyleId, selectedEntry?.textEditable, textTargets.length]);
+  }, [
+    activeBreakpoint,
+    activeTextTarget,
+    patchStyleId,
+    selectedEntry?.tableDataField,
+    selectedEntry?.textEditable,
+    textTargets.length,
+  ]);
+
+  const displayPreviewError = developerDetails
+    ? formatPatchUserMessage(previewError)
+    : formatPatchUserMessagePlain(previewError);
 
   useEffect(() => {
     if (!selectedId) {
@@ -387,7 +526,7 @@ export function PropertyPanelShell({
       return;
     }
     syncFromActiveTarget();
-  }, [selectedId, activeTextTargetKey, syncFromActiveTarget]);
+  }, [selectedId, activeTextTargetKey, activeBreakpoint, syncFromActiveTarget]);
 
   /** After Apply/Undo, Vite HMR may update the DOM a tick later; resync draft from the live node. */
   useEffect(() => {
@@ -428,10 +567,18 @@ export function PropertyPanelShell({
       return { error: "No changes to apply." };
     }
     if (hasText && !patchTextId) {
-      return { error: "Text cannot be patched for this target — add a data-nuvio-id on the text element." };
+      return {
+        error: developerDetails
+          ? "Text cannot be patched for this target — add a data-nuvio-id on the text element."
+          : "Nuvio can't safely edit this text yet.",
+      };
     }
     if (hasStyle && !patchStyleId) {
-      return { error: "Styles cannot be patched for this target." };
+      return {
+        error: developerDetails
+          ? "Styles cannot be patched for this target."
+          : "Nuvio can't safely edit this area yet.",
+      };
     }
     if (hasText && patchTextId) {
       const blocked = patchIdBlockedMessage(patchTextId);
@@ -447,8 +594,9 @@ export function PropertyPanelShell({
     }
     if (hasText && hasStyle && patchTextId !== patchStyleId) {
       return {
-        error:
-          "Text and styles target different elements. Validate and apply text first, then edit styles (or pick a single element in Edit target).",
+        error: developerDetails
+          ? "Text and styles target different elements. Validate and apply text first, then edit styles (or pick a single element in Edit target)."
+          : "Text and styles apply to different parts. Preview text first, then change styles.",
       };
     }
     const id = hasText ? patchTextId! : patchStyleId!;
@@ -456,6 +604,7 @@ export function PropertyPanelShell({
   }, [
     baselinePicks,
     baselineText,
+    developerDetails,
     draftText,
     patchIdBlockedMessage,
     patchStyleId,
@@ -465,13 +614,34 @@ export function PropertyPanelShell({
     textEditable,
   ]);
 
-  const stagedOps = useMemo(
-    () =>
-      buildAlphaPatchOps(baselineText, draftText, baselinePicks, picks, {
-        textEditable,
-      }),
-    [baselineText, draftText, baselinePicks, picks, textEditable],
-  );
+  const stagedOps = useMemo((): PatchOp[] => {
+    const styleOps = buildAlphaPatchOps(baselineText, draftText, baselinePicks, picks, {
+      textEditable: false,
+    });
+    const binding = selectedEntry?.tableDataField;
+    if (binding && textEditable && draftText !== baselineText) {
+      return [
+        {
+          kind: "setTableDataField",
+          arrayName: binding.arrayName,
+          rowKey: binding.rowKey,
+          field: binding.field,
+          value: draftText,
+        },
+        ...styleOps,
+      ];
+    }
+    return buildAlphaPatchOps(baselineText, draftText, baselinePicks, picks, {
+      textEditable,
+    });
+  }, [
+    baselineText,
+    draftText,
+    baselinePicks,
+    picks,
+    selectedEntry?.tableDataField,
+    textEditable,
+  ]);
 
   const stagedOpsFingerprint = useMemo(() => JSON.stringify(stagedOps), [stagedOps]);
 
@@ -498,6 +668,42 @@ export function PropertyPanelShell({
   const hasTextChange = textEditable && draftText !== baselineText;
   const hasStagedOps = hasTextChange || alphaPicksDiffer(picks, baselinePicks);
   const selectionResolved = Boolean(resolvedFile);
+
+  const containerGuidanceVisible = Boolean(
+    selectedEntry &&
+      selectedId &&
+      !missing &&
+      selectedEntry.textEditable === false &&
+      textTargets.length > 0,
+  );
+
+  const contextualGuideId = useMemo(
+    () =>
+      pickContextualGuide({
+        developerDetails,
+        selectedId,
+        selectedEntry,
+        selectionResolved,
+        dismissed: dismissedGuides,
+        containerGuidanceVisible,
+        tableAtRootMenu,
+        taskRouterShowControls: taskRouter.showTaskControls,
+      }),
+    [
+      developerDetails,
+      dismissedGuides,
+      missing,
+      selectedEntry,
+      selectedId,
+      selectionResolved,
+      containerGuidanceVisible,
+      textTargets.length,
+      tableAtRootMenu,
+      taskRouter.showTaskControls,
+    ],
+  );
+
+  const showWelcome = shouldShowWelcome({ developerDetails, dismissed: dismissedGuides });
   const patchBlockedReason =
     indexIdCount === 0
       ? "Source index has 0 ids — the dev server cannot map data-nuvio-id to files. Run pnpm dev from the repo root (builds packages), then hard-refresh. Check the terminal for [Nuvio] index warnings."
@@ -580,6 +786,13 @@ export function PropertyPanelShell({
     !previewError &&
     !previewBusy;
   const applyDisabled = !applyReady;
+  const previewReady =
+    hasStagedOps &&
+    previewValidatedFingerprint === stagedOpsFingerprint &&
+    !previewError &&
+    !previewBusy &&
+    previewValidatedOps != null &&
+    previewValidatedOps.length > 0;
   const [siblingMove, setSiblingMove] = useState(() => ({
     canMoveUp: false,
     canMoveDown: false,
@@ -594,9 +807,7 @@ export function PropertyPanelShell({
     setSiblingMove(getIndexedSiblingMoveAvailability(selectedId));
   }, [selectedId, missing, stagedVersion]);
 
-  const structuralPreviewMessage = structuralPreviewActive
-    ? formatPatchUserMessage(previewError)
-    : null;
+  const structuralPreviewMessage = structuralPreviewActive ? displayPreviewError : null;
   const structuralPreviewOk =
     structuralPreviewActive && !previewError && previewSummary ? previewSummary : null;
 
@@ -905,6 +1116,13 @@ export function PropertyPanelShell({
         </header>
         {developerDetails ? <EditorStackVersions diagnostics={runtimeDiagnostics} /> : null}
         <div className="nuvio-panel-body">
+          {showWelcome ? (
+            <OnboardingGuide
+              guideId="welcome"
+              variant="welcome"
+              onDismiss={() => dismissOnboardingGuide("welcome")}
+            />
+          ) : null}
           <div className="nuvio-selection-strip">
             {selectedId ? (
               developerDetails ? (
@@ -918,10 +1136,21 @@ export function PropertyPanelShell({
                   ) : null}
                 </>
               ) : (
+              <>
                 <span className="nuvio-selection-strip-id nuvio-selection-strip-id--friendly">
-                  {formatFriendlyId(selectedId)}
+                  {selectionTitle}
                 </span>
-              )
+                {taskRouter.backNav ? (
+                  <button
+                    type="button"
+                    className="nuvio-back-link"
+                    onClick={taskRouter.backNav.onBack}
+                  >
+                    {taskRouter.backNav.label}
+                  </button>
+                ) : null}
+              </>
+            )
             ) : (
               <span className="nuvio-text-muted">Click something on the page to edit it.</span>
             )}
@@ -941,49 +1170,116 @@ export function PropertyPanelShell({
         {selectedEntry ? (
           developerDetails ? (
             <SelectionMetadata entry={selectedEntry} />
-          ) : (
+          ) : !taskRouter.active && !simpleRouterMode ? (
             <SelectionSummary entry={selectedEntry} />
-          )
+          ) : null
         ) : null}
 
-        <section className="nuvio-card nuvio-stack-2">
-          <h3 className="nuvio-section-title">Device + breakpoint</h3>
-          <div className="nuvio-row-wrap">
-            <button
-              type="button"
-              className={`nuvio-button-chip ${devicePreset === "desktop" ? "nuvio-button-chip--active" : ""}`}
-              onClick={() => onDevicePresetChange("desktop")}
-            >
-              Desktop
-            </button>
-            <button
-              type="button"
-              className={`nuvio-button-chip ${devicePreset === "tablet" ? "nuvio-button-chip--active" : ""}`}
-              onClick={() => onDevicePresetChange("tablet")}
-            >
-              Tablet
-            </button>
-            <button
-              type="button"
-              className={`nuvio-button-chip ${devicePreset === "mobile" ? "nuvio-button-chip--active" : ""}`}
-              onClick={() => onDevicePresetChange("mobile")}
-            >
-              Mobile
-            </button>
-          </div>
-          <SelectRow
-            label="Active BP"
-            value={activeBreakpoint}
-            onChange={(v) => onActiveBreakpointChange(v as Breakpoint)}
-            options={[
-              { value: "base", label: "base" },
-              { value: "sm", label: "sm" },
-              { value: "md", label: "md" },
-              { value: "lg", label: "lg" },
-              { value: "xl", label: "xl" },
-            ]}
+        {taskRouter.active ? taskRouter.cardMenu : null}
+        {taskRouter.active ? taskRouter.tableMenu : null}
+        {taskRouter.active ? taskRouter.buttonMenu : null}
+        {taskRouter.active ? taskRouter.formMenu : null}
+        {taskRouter.active ? taskRouter.navMenu : null}
+        {taskRouter.active ? taskRouter.chartMenu : null}
+        {taskRouter.active ? taskRouter.sectionMenu : null}
+
+        {taskRouter.active &&
+        simpleRouterMode === "nav" &&
+        taskRouter.navTask === "navigationItems" &&
+        taskRouter.navTargets.length > 0 ? (
+          <section className="nuvio-card nuvio-stack-2">
+            <p className="nuvio-label">Pick a link</p>
+            <div className="nuvio-stack-1">
+              {taskRouter.navTargets.map((navEntry) => (
+                <button
+                  key={navEntry.id}
+                  type="button"
+                  className={`nuvio-button nuvio-button--block ${selectedId === navEntry.id ? "nuvio-button-primary" : ""}`}
+                  onClick={() => onSelectIndexedId(navEntry.id)}
+                >
+                  {formatFriendlyId(navEntry.id, navEntry)}
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {taskRouter.active &&
+        simpleRouterMode === "table" &&
+        taskRouter.tableTask === "columnHeaders" &&
+        !taskRouter.isDirectTableFieldEdit ? (
+          <TableColumnHeaderPicker
+            headers={taskRouter.tableHeaders}
+            selectedId={selectedId ?? ""}
+            developerDetails={developerDetails}
+            onSelectId={onSelectIndexedId}
           />
-        </section>
+        ) : null}
+
+        {taskRouter.active &&
+        simpleRouterMode === "table" &&
+        taskRouter.tableTask === "rows" &&
+        !taskRouter.isDirectTableFieldEdit ? (
+          <TableRowPicker
+            rows={taskRouter.tableRows}
+            selectedId={selectedId ?? ""}
+            onSelectId={(rowId) => {
+              const nameTextId = indexEntries.find((e) => e.id === `${rowId}.nameText`)?.id;
+              onSelectIndexedId(nameTextId ?? rowId);
+            }}
+          />
+        ) : null}
+
+        {contextualGuideId ? (
+          <OnboardingGuide
+            guideId={contextualGuideId}
+            variant="contextual"
+            onDismiss={() => dismissOnboardingGuide(contextualGuideId)}
+          />
+        ) : null}
+
+        {developerDetails && selectedId && textTargets.length > 1 && activeTextTargetKey ? (
+          <TextTargetPicker
+            hostId={selectedId}
+            targets={textTargets}
+            activeKey={activeTextTargetKey}
+            onActiveKeyChange={onActiveTextTargetKeyChange}
+            developerDetails={developerDetails}
+            onHoverKeyChange={onHoverTextTargetKeyChange}
+          />
+        ) : null}
+
+        {selectedEntry && selectedId && !missing ? (
+          <ContainerGuidance
+            entry={selectedEntry}
+            selectedId={selectedId}
+            textTargets={textTargets}
+            indexEntries={indexEntries}
+            developerDetails={developerDetails}
+            taskRouterActive={taskRouter.active}
+            onSwitchToTarget={({ nuvioId, key }) => {
+              if (nuvioId) {
+                onSelectIndexedId(nuvioId);
+              } else {
+                onActiveTextTargetKeyChange(key);
+              }
+            }}
+            onSelectId={onSelectIndexedId}
+            onCopyFixPrompt={() => {
+              void copyTextToClipboard(MAKE_TABLE_EDITABLE_SNIPPET);
+            }}
+          />
+        ) : null}
+
+        {selectedEntry && selectedId && !missing && developerDetails && !taskRouter.active ? (
+          <ComponentModePanel
+            entry={selectedEntry}
+            indexEntries={indexEntries}
+            selectedId={selectedId}
+            developerDetails={developerDetails}
+            onSelectId={onSelectIndexedId}
+          />
+        ) : null}
 
         {selectedId && missing ? (
           <p className="nuvio-text-xs nuvio-text-warn">
@@ -1059,25 +1355,12 @@ export function PropertyPanelShell({
           </section>
         ) : null}
 
-        {selectedId && textTargets.length > 1 && activeTextTargetKey ? (
-          <TextTargetPicker
-            hostId={selectedId}
-            targets={textTargets}
-            activeKey={activeTextTargetKey}
-            onActiveKeyChange={onActiveTextTargetKeyChange}
-            developerDetails={developerDetails}
-            onHoverKeyChange={onHoverTextTargetKeyChange}
-          />
-        ) : null}
-
-        {selectedId && !missing ? (
+        {showEditSection && (developerDetails || showSimpleEditControls) ? (
           <section className="nuvio-card nuvio-stack-2">
-            <h3 className="nuvio-section-title">Style</h3>
-            <p className="nuvio-text-2xs nuvio-text-muted">
-              Style edits apply at <span className="nuvio-font-medium">{activeBreakpoint}</span>{" "}
-              breakpoint.
-            </p>
-            {hasStyleTargetChoice ? (
+            {developerDetails ? (
+              <h3 className="nuvio-section-title">Quick edits</h3>
+            ) : null}
+            {hasStyleTargetChoice && developerDetails ? (
               <label className="nuvio-block nuvio-stack-1">
                 <span className="nuvio-label">Style target</span>
                 <select
@@ -1092,49 +1375,63 @@ export function PropertyPanelShell({
             ) : null}
             {previewBusy ? (
               <p className="nuvio-banner nuvio-banner--info nuvio-text-2xs">
-                Validating patch with the dev server…
+                {developerDetails
+                  ? "Validating patch with the dev server…"
+                  : "Checking your changes…"}
               </p>
             ) : null}
             {lastPatchError ? (
               <p className="nuvio-banner nuvio-banner--error">{lastPatchError}</p>
             ) : null}
-            {previewError && !structuralPreviewActive ? (
-              <p className="nuvio-banner nuvio-banner--error">
-                {formatPatchUserMessage(previewError)}
-              </p>
+            {displayPreviewError && !structuralPreviewActive && developerDetails ? (
+              <p className="nuvio-banner nuvio-banner--error">{displayPreviewError}</p>
             ) : null}
-            {displayPatchBlockedReason ? (
+            {displayPatchBlockedReason && developerDetails ? (
               <p className="nuvio-banner nuvio-banner--warn">{displayPatchBlockedReason}</p>
             ) : null}
-            {hasStagedOps && !displayPatchBlockedReason && previewApplyMismatch ? (
+            {hasStagedOps && !displayPatchBlockedReason && previewApplyMismatch && developerDetails ? (
               <p className="nuvio-banner nuvio-banner--neutral nuvio-text-2xs nuvio-leading-snug">
-                Run <span className="nuvio-font-medium">Validate</span> after each edit so the
-                summary matches what you apply.
+                Run <span className="nuvio-font-medium">{previewButtonLabel}</span> after each edit
+                so the summary matches what you apply.
               </p>
+            ) : null}
+            {hasStagedOps && !displayPatchBlockedReason && previewApplyMismatch && simpleMode ? (
+              <p className="nuvio-text-2xs nuvio-text-muted">Preview your changes before applying.</p>
             ) : null}
             {patchTargetConflict ? (
               <p className="nuvio-banner nuvio-banner--warn nuvio-text-2xs nuvio-leading-snug">
-                Text and styles apply to different elements. Validate text first, then change
-                styles — or pick one target in Edit target.
+                {developerDetails
+                  ? "Text and styles apply to different elements. Validate text first, then change styles — or pick one target in Edit target."
+                  : "Text and styles apply to different parts. Preview text first, then change styles."}
               </p>
             ) : null}
             {patchTargetError ? (
-              <p className="nuvio-banner nuvio-banner--error nuvio-text-2xs">{patchTargetError}</p>
+              <p className="nuvio-banner nuvio-banner--error nuvio-text-2xs">
+                {developerDetails
+                  ? patchTargetError
+                  : patchTargetError.startsWith("Nuvio can't") ||
+                      patchTargetError.startsWith("Nothing") ||
+                      patchTargetError.startsWith("No changes") ||
+                      patchTargetError.startsWith("Text and styles") ||
+                      patchTargetError.startsWith("This part")
+                    ? patchTargetError
+                    : (getSimpleSelectErrorMessage(patchTargetError) ?? patchTargetError)}
+              </p>
             ) : null}
-            {patchStyleId && selectedId && patchStyleId !== selectedId ? (
+            {patchStyleId && selectedId && patchStyleId !== selectedId && developerDetails ? (
               <p className="nuvio-text-2xs nuvio-text-muted nuvio-leading-snug">
                 Styles apply to{" "}
                 <span className="nuvio-font-medium">
-                  {developerDetails ? patchStyleId : formatFriendlyId(patchStyleId)}
+                  {developerDetails ? patchStyleId : formatFriendlyId(patchStyleId, selectedEntry)}
                 </span>
                 {developerDetails ? " (not the outer container you clicked)" : ""}.
               </p>
             ) : null}
-            {patchTextId ? (
+            {patchTextId && developerDetails ? (
               <p className="nuvio-text-2xs nuvio-text-muted nuvio-leading-snug">
                 Text applies to{" "}
                 <span className="nuvio-font-medium">
-                  {developerDetails ? patchTextId : formatFriendlyId(patchTextId)}
+                  {developerDetails ? patchTextId : formatFriendlyId(patchTextId, selectedEntry)}
                 </span>
                 .
               </p>
@@ -1142,6 +1439,7 @@ export function PropertyPanelShell({
             {developerDetails && !textEditable && textEditReason ? (
               <p className="nuvio-banner nuvio-banner--neutral nuvio-text-2xs">{textEditReason}</p>
             ) : null}
+            {(!panelControls || panelControls.showText) && (
             <label className="nuvio-block nuvio-stack-1">
               <span className="nuvio-label">Text</span>
               <textarea
@@ -1152,6 +1450,153 @@ export function PropertyPanelShell({
                 className="nuvio-control nuvio-textarea"
               />
             </label>
+            )}
+            {showQuickStyle ? (
+              <div className="nuvio-stack-1">
+                <p className="nuvio-label">Quick Style</p>
+                <div className="nuvio-row-wrap">
+                  {QUICK_TEXT_STYLE_PRESETS.map((preset) => (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      className="nuvio-button-chip"
+                      onClick={() => {
+                        if (preset.id === "normal") {
+                          setPicks({ ...baselinePicks });
+                        } else {
+                          setPicks((p) => applyStylePresetToPicks(p, preset.fragment));
+                        }
+                      }}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            {(!panelControls || panelControls.showTextColor) && (developerDetails || !showQuickStyle) && (
+            <ColorPickerRow
+              label="Text color"
+              value={picks.textColor}
+              onChange={(v) => setPicks((p) => ({ ...p, textColor: v }))}
+              options={TEXT_COLOR_OPTIONS}
+              utilityPrefix="text"
+              simpleMode={!developerDetails}
+            />
+            )}
+            {(!panelControls || panelControls.showBackground) && (
+            <ColorPickerRow
+              label="Background"
+              value={picks.bgColor}
+              onChange={(v) => setPicks((p) => ({ ...p, bgColor: v }))}
+              options={BACKGROUND_COLOR_OPTIONS}
+              utilityPrefix="bg"
+              simpleMode={!developerDetails}
+            />
+            )}
+            {(!panelControls || panelControls.showPadding) && (
+            <SelectRow
+              label="Padding"
+              value={picks.padding}
+              onChange={(v) => setPicks((p) => ({ ...p, padding: v }))}
+              options={padOpts}
+              developerDetails={developerDetails}
+              simpleCategory="padding"
+            />
+            )}
+            {(!panelControls || panelControls.showRadius) && (
+            <SelectRow
+              label="Radius"
+              value={picks.rounded}
+              onChange={(v) => setPicks((p) => ({ ...p, rounded: v }))}
+              options={roundedOpts}
+              developerDetails={developerDetails}
+              simpleCategory="rounded"
+            />
+            )}
+            {(!panelControls || panelControls.showFontSize) && developerDetails && (
+            <SelectRow
+              label="Size"
+              value={picks.fontSize}
+              onChange={(v) => setPicks((p) => ({ ...p, fontSize: v }))}
+              options={fontSizeOpts}
+              developerDetails={developerDetails}
+              simpleCategory="fontSize"
+            />
+            )}
+            {(!panelControls || panelControls.showFontWeight) && developerDetails && (
+            <SelectRow
+              label="Weight"
+              value={picks.fontWeight}
+              onChange={(v) => setPicks((p) => ({ ...p, fontWeight: v }))}
+              options={fontWeightOpts}
+              developerDetails={developerDetails}
+              simpleCategory="fontWeight"
+            />
+            )}
+            {(!panelControls || panelControls.showWidth) && !developerDetails ? (
+            <SelectRow
+              label="Width"
+              value={picks.width}
+              onChange={(v) => setPicks((p) => ({ ...p, width: v }))}
+              options={widthOpts}
+              developerDetails={developerDetails}
+              simpleCategory="width"
+            />
+            ) : null}
+            {(!panelControls || panelControls.showShadow) && !developerDetails && (
+            <SelectRow
+              label="Shadow"
+              value={picks.shadow}
+              onChange={(v) => setPicks((p) => ({ ...p, shadow: v }))}
+              options={shadowOpts}
+              developerDetails={developerDetails}
+              simpleCategory="shadow"
+            />
+            )}
+            {(!panelControls || panelControls.showHideShow) && !developerDetails ? (
+              <div className="nuvio-row-wrap">
+                <button
+                  type="button"
+                  disabled={structuralActionsDisabled}
+                  className="nuvio-button"
+                  onClick={() => onRequestStructuralPreview(buildHideOp())}
+                >
+                  Hide
+                </button>
+                <button
+                  type="button"
+                  disabled={structuralActionsDisabled}
+                  className="nuvio-button"
+                  onClick={() => onRequestStructuralPreview(buildShowOp())}
+                >
+                  Show
+                </button>
+              </div>
+            ) : null}
+            {developerDetails && LAYOUT_HELPERS.length > 0 ? (
+              <div className="nuvio-stack-1">
+                <p className="nuvio-label">Layout</p>
+                <div className="nuvio-row-wrap">
+                  {LAYOUT_HELPERS.map((helper) => (
+                    <button
+                      key={helper.id}
+                      type="button"
+                      className="nuvio-button-chip"
+                      onClick={() => setPicks((p) => ({ ...p, ...helper.patch }))}
+                    >
+                      {helper.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {developerDetails ? (
+            <details className="nuvio-more-styles">
+              <summary className="nuvio-section-title nuvio-more-styles-summary">
+                More styles
+              </summary>
             <div className="nuvio-stack-2 nuvio-pt-1">
               <p className="nuvio-group-title">Typography</p>
               <SelectRow
@@ -1184,34 +1629,8 @@ export function PropertyPanelShell({
                 onChange={(v) => setPicks((p) => ({ ...p, textAlign: v }))}
                 options={textAlignOpts}
               />
-              <ColorPickerRow
-                label="Text color"
-                value={picks.textColor}
-                onChange={(v) => setPicks((p) => ({ ...p, textColor: v }))}
-                options={TEXT_COLOR_OPTIONS}
-                utilityPrefix="text"
-              />
 
               <p className="nuvio-group-title">Spacing</p>
-              <ColorPickerRow
-                label="Background"
-                value={picks.bgColor}
-                onChange={(v) => setPicks((p) => ({ ...p, bgColor: v }))}
-                options={BACKGROUND_COLOR_OPTIONS}
-                utilityPrefix="bg"
-              />
-              <SelectRow
-                label="Radius"
-                value={picks.rounded}
-                onChange={(v) => setPicks((p) => ({ ...p, rounded: v }))}
-                options={roundedOpts}
-              />
-              <SelectRow
-                label="Padding"
-                value={picks.padding}
-                onChange={(v) => setPicks((p) => ({ ...p, padding: v }))}
-                options={padOpts}
-              />
               <SelectRow
                 label="Padding X"
                 value={picks.paddingX}
@@ -1337,12 +1756,19 @@ export function PropertyPanelShell({
                 options={ringColorOpts}
               />
             </div>
-            {previewSummary && !structuralPreviewActive ? (
+            </details>
+            ) : null}
+            {previewSummary && !structuralPreviewActive && developerDetails ? (
               <div className="nuvio-preview-box">
-                <p className="nuvio-preview-box-title">Validated change</p>
-                <p className="nuvio-preview-box-body">{previewSummary}</p>
+                <p className="nuvio-preview-box-title">
+                  {developerDetails ? "Validated change" : "Preview Changes"}
+                </p>
+                <p className="nuvio-preview-box-body">
+                  {developerDetails ? previewSummary : humanPreviewBlock || previewSummary}
+                </p>
               </div>
             ) : null}
+            {developerDetails ? (
             <div className="nuvio-row-wrap nuvio-pt-2">
               <button
                 type="button"
@@ -1358,7 +1784,7 @@ export function PropertyPanelShell({
                   onRequestPreview(stagedOps, resolved.id);
                 }}
               >
-                Validate
+                {previewButtonLabel}
               </button>
               <button
                 type="button"
@@ -1376,7 +1802,7 @@ export function PropertyPanelShell({
                   }
                 }}
               >
-                Apply
+                {applyButtonLabel}
               </button>
               <button
                 type="button"
@@ -1384,7 +1810,7 @@ export function PropertyPanelShell({
                 className="nuvio-button nuvio-button-ghost"
                 onClick={() => onRequestUndo()}
               >
-                Undo last
+                Undo
               </button>
               <button
                 type="button"
@@ -1394,18 +1820,223 @@ export function PropertyPanelShell({
                 Cancel
               </button>
             </div>
+            ) : null}
           </section>
         ) : null}
 
-        {developerDetails ? (
+        {simpleMode &&
+        selectedId &&
+        (displayPreviewError || displayPatchBlockedReason || selectedEntry?.riskLevel === "unsupported") ? (
+          <HandoffActionBar
+            reason={
+              displayPreviewError ??
+              displayPatchBlockedReason ??
+              getSimpleBlockedEditFallback(selectedId, selectedEntry)
+            }
+            simpleMode
+            suggestedAction={getPlainPatchAction(
+              displayPreviewError ?? displayPatchBlockedReason ?? "unsupported",
+            )}
+            hostId={selectedId ?? ""}
+            file={resolvedFile}
+            line={resolvedLine}
+            componentName={selectedEntry?.componentName}
+            tableContext={detectTableMode(selectedEntry)}
+            onSwitchTarget={() => {
+              const target = textTargets.find((t) => t.textEditable && t.nuvioId);
+              if (target?.nuvioId) {
+                onSelectIndexedId(target.nuvioId);
+              }
+            }}
+            onAddIdHint={() => {
+              void copyTextToClipboard(MAKE_TABLE_EDITABLE_SNIPPET);
+            }}
+            onChangeBreakpoint={() => onActiveBreakpointChange("base")}
+          />
+        ) : null}
+
+        {simpleMode && selectedId && !missing ? (
+          <SimpleModeActionBar
+            previewLabel={previewButtonLabel}
+            applyLabel={applyButtonLabel}
+            previewBusy={previewBusy && !structuralPreviewActive}
+            previewDisabled={patchActionsDisabled}
+            applyDisabled={applyDisabled}
+            undoDisabled={!channelReady || undoStackDepth <= 0}
+            hasStagedOps={hasStagedOps}
+            previewReady={previewReady}
+            humanPreviewBlock={humanPreviewBlock}
+            structuralPreviewActive={structuralPreviewActive}
+            onPreview={() => {
+              const resolved = resolvePatchApplyId();
+              if ("error" in resolved) {
+                setPatchTargetError(resolved.error);
+                return;
+              }
+              setPatchTargetError(null);
+              onRequestPreview(stagedOps, resolved.id);
+            }}
+            onApply={() => {
+              if (previewValidatedOps?.length) {
+                const resolved = resolvePatchApplyId();
+                if ("error" in resolved) {
+                  setPatchTargetError(resolved.error);
+                  return;
+                }
+                setPatchTargetError(null);
+                onRequestApply([...previewValidatedOps], resolved.id);
+              }
+            }}
+            onUndo={() => onRequestUndo()}
+          />
+        ) : null}
+
+        {simpleMode && selectedId ? (
+          <details className="nuvio-card nuvio-advanced-panel">
+            <summary className="nuvio-section-title nuvio-advanced-summary">Advanced</summary>
+            <div className="nuvio-stack-2 nuvio-pt-1">
+              <div className="nuvio-stack-1">
+                <p className="nuvio-label">Responsive preview</p>
+                <div className="nuvio-row-wrap">
+                  <button
+                    type="button"
+                    className={`nuvio-button-chip ${devicePreset === "desktop" ? "nuvio-button-chip--active" : ""}`}
+                    onClick={() => onDevicePresetChange("desktop")}
+                  >
+                    Desktop
+                  </button>
+                  <button
+                    type="button"
+                    className={`nuvio-button-chip ${devicePreset === "mobile" ? "nuvio-button-chip--active" : ""}`}
+                    onClick={() => onDevicePresetChange("mobile")}
+                  >
+                    Mobile
+                  </button>
+                </div>
+              </div>
+              {showQuickStyle ? (
+                <>
+                  <ColorPickerRow
+                    label="Text color"
+                    value={picks.textColor}
+                    onChange={(v) => setPicks((p) => ({ ...p, textColor: v }))}
+                    options={TEXT_COLOR_OPTIONS}
+                    utilityPrefix="text"
+                    simpleMode
+                  />
+                  <SelectRow
+                    label="Size"
+                    value={picks.fontSize}
+                    onChange={(v) => setPicks((p) => ({ ...p, fontSize: v }))}
+                    options={fontSizeOpts}
+                    developerDetails={false}
+                    simpleCategory="fontSize"
+                  />
+                  <SelectRow
+                    label="Weight"
+                    value={picks.fontWeight}
+                    onChange={(v) => setPicks((p) => ({ ...p, fontWeight: v }))}
+                    options={fontWeightOpts}
+                    developerDetails={false}
+                    simpleCategory="fontWeight"
+                  />
+                </>
+              ) : null}
+              {showSimpleEditControls && taskRouter.presetContext === "card" ? (
+                <div className="nuvio-row-wrap">
+                  {presetsForContext("card").map((preset) => (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      className="nuvio-button-chip"
+                      onClick={() => setPicks((p) => applyStylePresetToPicks(p, preset.fragment))}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+              <details className="nuvio-outline-panel">
+                <summary className="nuvio-label">Outline</summary>
+                <ComponentTree
+                  entries={indexEntries}
+                  duplicateErrors={duplicateErrors}
+                  selectedId={selectedId}
+                  onSelectId={onSelectIndexedId}
+                  friendlyLabels
+                />
+              </details>
+              <button
+                type="button"
+                className="nuvio-button nuvio-button--block"
+                onClick={() => onDeveloperDetailsChange(true)}
+              >
+                Show Developer Details
+              </button>
+            </div>
+          </details>
+        ) : null}
+
+        {!simpleMode ? (
+          <>
+        <section className="nuvio-card nuvio-stack-2">
+          <h3 className="nuvio-section-title">Device + breakpoint</h3>
+          <div className="nuvio-row-wrap">
+            <button
+              type="button"
+              className={`nuvio-button-chip ${devicePreset === "desktop" ? "nuvio-button-chip--active" : ""}`}
+              onClick={() => onDevicePresetChange("desktop")}
+            >
+              Desktop
+            </button>
+            <button
+              type="button"
+              className={`nuvio-button-chip ${devicePreset === "tablet" ? "nuvio-button-chip--active" : ""}`}
+              onClick={() => onDevicePresetChange("tablet")}
+            >
+              Tablet
+            </button>
+            <button
+              type="button"
+              className={`nuvio-button-chip ${devicePreset === "mobile" ? "nuvio-button-chip--active" : ""}`}
+              onClick={() => onDevicePresetChange("mobile")}
+            >
+              Mobile
+            </button>
+          </div>
+          <SelectRow
+            label={developerDetails ? "Active BP" : "Applies on"}
+            value={activeBreakpoint}
+            onChange={(v) => onActiveBreakpointChange(v as Breakpoint)}
+            options={[
+              { value: "base", label: developerDetails ? "base" : formatPlainBreakpointLabel("base") },
+              { value: "sm", label: developerDetails ? "sm" : formatPlainBreakpointLabel("sm") },
+              { value: "md", label: developerDetails ? "md" : formatPlainBreakpointLabel("md") },
+              { value: "lg", label: developerDetails ? "lg" : formatPlainBreakpointLabel("lg") },
+              { value: "xl", label: developerDetails ? "xl" : formatPlainBreakpointLabel("xl") },
+            ]}
+          />
+          {!developerDetails ? (
+            <p className="nuvio-text-2xs nuvio-text-muted">
+              Applies on:{" "}
+              <span className="nuvio-font-medium">{formatPlainBreakpointLabel(activeBreakpoint)}</span>
+            </p>
+          ) : null}
+        </section>
+
+        {selectedId ? (
           <section className="nuvio-card nuvio-card--tree">
+            <h3 className="nuvio-section-title">Component tree</h3>
             <ComponentTree
               entries={indexEntries}
               duplicateErrors={duplicateErrors}
               selectedId={selectedId}
               onSelectId={onSelectIndexedId}
+              friendlyLabels={false}
             />
           </section>
+        ) : null}
+          </>
         ) : null}
         </div>
       </div>

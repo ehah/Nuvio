@@ -2,6 +2,75 @@
 
 Validated stacks for published **`@nuvio/*`** packages. Expand rows as Nuvio is tested on more environments.
 
+## v0.5.0 stable (Vibe-coder task router — Vite public)
+
+Target release: **`0.5.0`** (see [CHANGELOG](../CHANGELOG.md), [nuvio_v0.5.0.md](./nuvio_v0.5.0.md)).
+
+| Area | Supported | Notes |
+| ---- | --------- | ----- |
+| **Bundler (Vite)** | Vite **5.4+** and **6.x** | **Public v0.5 scope** — full task router + TailAdmin P-A–P-F on Vite. |
+| **Bundler (Next)** | Experimental only | `@nuvio/next` remains in repo; **not** in public v0.5 setup docs. Use `pnpm dev:next` for maintainers. |
+| **Framework** | React **18.3+** or **19.x** | Simple Mode: Card, Table, Button, Form, Nav, Chart, Section task menus. |
+| **Wire protocol** | **v7** (unchanged) | Index v4; no protocol bump in v0.5. |
+| **Instrumentation** | `data-nuvio-id` on DOM or forwarded through UI primitives | §12 gap table in [nuvio_v0.5.0.md](./nuvio_v0.5.0.md). |
+
+### v0.5 capabilities
+
+- **Preview Changes** / **Apply to Code** (Simple Mode); human preview without Tailwind tokens.
+- Task router modes; container guidance v2; presets v2; Copy Fix Prompt on blocked edits.
+- Engine carry-forward from v0.4: table Tier C, plain patch messages, undo stack.
+
+### Next.js (experimental — not public v0.5)
+
+Same as v0.4: custom dev server + client components. Do not document in [nuvioUser.md](./nuvioUser.md) until v0.6+.
+
+---
+
+## v0.4.0 stable (Phase C — vibe-coder, Vite + Next)
+
+Target release: **`0.4.0`** (see [CHANGELOG](../CHANGELOG.md), [nuvio_v0.4.0.md](./nuvio_v0.4.0.md)).
+
+| Area | Supported | Notes |
+| ---- | --------- | ----- |
+| **Bundler (Vite)** | Vite **5.4+** and **6.x** | `@nuvio/vite-plugin` — full feature set. |
+| **Bundler (Next)** | Next **14.x** / **15.x** dev | `@nuvio/next` — **custom dev server** + App Router **client** components only. |
+| **Framework** | React **18.3+** or **19.x** | Simple mode + table mode on instrumented dashboards. |
+| **Wire protocol** | **v7** | Index v4 table metadata; `setTableDataField` patch op. |
+| **Instrumentation** | `data-nuvio-id` on DOM or forwarded through UI primitives | Same contract as Vite. |
+
+### v0.4 capabilities
+
+- Quick edits, container guidance, table section/header/row editing, Tier C `tableData` cell copy.
+- Copy fix context + open-in-editor handoff; component-aware panel headers.
+- Outline v2 with friendly labels + search (simple mode).
+
+### Next.js integration (one mode)
+
+Use `attachNuvioToNextServer(httpServer)` from `@nuvio/next` in a **custom `server.js`** during `next dev`. RSC server components and Turbopack-only `next dev` without custom server are **not** validated in v0.4.0.
+
+Example: `apps/next-dogfood`.
+
+---
+
+## v0.4.0-alpha (Phase C — vibe-coder, Vite)
+
+Target release: **`0.4.0-alpha.0`** (see [CHANGELOG](../CHANGELOG.md), [nuvio_v0.4.0.md](./nuvio_v0.4.0.md)).
+
+| Area | Supported | Notes |
+| ---- | --------- | ----- |
+| **Bundler** | Vite **5.4+** and **6.x** | Same as v0.3. **Next.js dev:** planned for **0.4.0** stable, not alpha. |
+| **Framework** | React **18.3+** or **19.x** | Simple mode + table mode on instrumented dashboards. |
+| **Wire protocol** | **v7** | Index v4 table metadata; `setTableDataField` patch op. |
+| **Instrumentation** | `data-nuvio-id` on DOM or forwarded through UI primitives | Custom `TableCell`-style wrappers must spread props to `<th>`/`<td>`. |
+
+### v0.4 alpha capabilities (Vite)
+
+- Quick edits, container guidance, table section/header/row editing on TailAdmin dogfood.
+- Static `tableData` cell copy via `setTableDataField`.
+- Copy fix context for Cursor handoff.
+
+---
+
 ## v0.3.0-alpha (Phase B — stack mastery)
 
 Target release: **`0.3.0-alpha.0`** (see [CHANGELOG](../CHANGELOG.md), [nuvio_v0.3.0.md](./nuvio_v0.3.0.md)).

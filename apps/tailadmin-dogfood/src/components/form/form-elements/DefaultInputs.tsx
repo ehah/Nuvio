@@ -25,11 +25,13 @@ export default function DefaultInputs() {
           <Input type="text" id="input" />
         </div>
         <div>
-          <Label htmlFor="inputTwo">Input with Placeholder</Label>
+          <Label htmlFor="inputTwo" data-nuvio-id="form.email.label">
+            Input with Placeholder
+          </Label>
           <Input
             type="text"
             id="inputTwo"
-            data-nuvio-id="form.email.placeholder"
+            data-nuvio-id="form.email.input"
             placeholder="info@gmail.com"
           />
         </div>

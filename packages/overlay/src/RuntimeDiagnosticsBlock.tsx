@@ -1,7 +1,7 @@
-import type { DuplicateIdError, RuntimeDiagnostics } from "@nuvio/shared";
+import type { DuplicateIdError, IndexWireEntry, RuntimeDiagnostics } from "@nuvio/shared";
 import type { ReactElement } from "react";
 import {
-  formatFriendlyId,
+  formatSelectionTitle,
   getSimpleChipIndexedLabel,
   getSimpleDuplicateWarning,
   getSimpleIndexEmptyMessage,
@@ -68,6 +68,8 @@ export function NuvioChipStatus({
   indexedCount,
   duplicateErrors,
   selectedId,
+  selectedEntry,
+  indexEntries,
   selectError,
   developerDetails,
 }: {
@@ -76,6 +78,8 @@ export function NuvioChipStatus({
   indexedCount: number;
   duplicateErrors: readonly DuplicateIdError[];
   selectedId: string | null;
+  selectedEntry?: IndexWireEntry;
+  indexEntries?: readonly IndexWireEntry[];
   selectError: string | null;
   developerDetails: boolean;
 }): ReactElement {
@@ -125,7 +129,9 @@ export function NuvioChipStatus({
         <p className="nuvio-chip-selected nuvio-truncate">
           <span className="nuvio-text-muted">Selected </span>
           <span className={developerDetails ? "nuvio-text-mono nuvio-text-accent" : "nuvio-text-accent"}>
-            {developerDetails ? selectedId : formatFriendlyId(selectedId)}
+            {developerDetails
+              ? selectedId
+              : formatSelectionTitle(selectedId, selectedEntry, indexEntries)}
           </span>
         </p>
       ) : null}

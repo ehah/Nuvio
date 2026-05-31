@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /** Bump when wire payloads change incompatibly. */
-export const PROTOCOL_VERSION = 5 as const;
+export const PROTOCOL_VERSION = 7 as const;
 
 export const riskLevelSchema = z.enum(["safe", "caution", "unsupported"]);
 
@@ -47,6 +47,7 @@ export type StyleWireTarget = z.infer<typeof styleTargetSchema>;
 export const hierarchyRoleSchema = z.enum([
   "section",
   "card",
+  "table",
   "form",
   "group",
   "layout",
@@ -56,6 +57,36 @@ export const hierarchyRoleSchema = z.enum([
   "media",
   "unknown",
 ]);
+
+/** Index v4: row host under a table section (`orders.row.{key}`). */
+export const rowTargetSchema = z.object({
+  rowKey: z.string(),
+  nuvioId: z.string(),
+  label: z.string(),
+  file: z.string(),
+  line: z.number().int(),
+});
+
+export type RowWireTarget = z.infer<typeof rowTargetSchema>;
+
+/** Index v4: static `tableData` binding for Tier C cell edits. */
+export const tableMetaSchema = z.object({
+  dataBinding: z.string(),
+  file: z.string(),
+  line: z.number().int(),
+  columns: z.array(z.string()).optional(),
+});
+
+export type TableMeta = z.infer<typeof tableMetaSchema>;
+
+/** Index v4: patch cell copy via local array literal. */
+export const tableDataFieldSchema = z.object({
+  arrayName: z.string(),
+  rowKey: z.string(),
+  field: z.string(),
+});
+
+export type TableDataFieldBinding = z.infer<typeof tableDataFieldSchema>;
 
 export type HierarchyRole = z.infer<typeof hierarchyRoleSchema>;
 
@@ -88,6 +119,12 @@ export const indexEntrySchema = z.object({
   parentHostId: z.string().optional(),
   /** Index v3: descendant host ids under this host (if any). */
   childTargetIds: z.array(z.string()).optional(),
+  /** Index v4: row hosts when this entry is a table section. */
+  rowTargets: z.array(rowTargetSchema).optional(),
+  /** Index v4: static table data binding for Tier C. */
+  tableMeta: tableMetaSchema.optional(),
+  /** Index v4: when this host maps to a `tableData` field edit. */
+  tableDataField: tableDataFieldSchema.optional(),
 });
 
 export type IndexWireEntry = z.infer<typeof indexEntrySchema>;
@@ -158,12 +195,22 @@ export const patchOpDuplicateHostSchema = z.object({
   kind: z.literal("duplicateHost"),
 });
 
+/** Index v4: update a string field in a local `const` array (Tier C table cells). */
+export const patchOpSetTableDataFieldSchema = z.object({
+  kind: z.literal("setTableDataField"),
+  arrayName: z.string(),
+  rowKey: z.string(),
+  field: z.string(),
+  value: z.string(),
+});
+
 export const patchOpSchema = z.discriminatedUnion("kind", [
   patchOpSetTextSchema,
   patchOpMergeTailwindSchema,
   patchOpMoveSiblingSchema,
   patchOpSetHiddenSchema,
   patchOpDuplicateHostSchema,
+  patchOpSetTableDataFieldSchema,
 ]);
 
 export type PatchOp = z.infer<typeof patchOpSchema>;
@@ -243,6 +290,9 @@ export const serverSelectAckSchema = z.object({
   hierarchyRole: hierarchyRoleSchema.optional(),
   parentHostId: z.string().optional(),
   childTargetIds: z.array(z.string()).optional(),
+  rowTargets: z.array(rowTargetSchema).optional(),
+  tableMeta: tableMetaSchema.optional(),
+  tableDataField: tableDataFieldSchema.optional(),
   errorCode: z.string().optional(),
   errorMessage: z.string().optional(),
 });

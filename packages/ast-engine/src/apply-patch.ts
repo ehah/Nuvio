@@ -7,6 +7,7 @@ import prettier from "prettier";
 import { twMerge } from "tailwind-merge";
 import type { PatchOp } from "@nuvio/shared";
 import { validateTailwindFragment } from "./tailwind-whitelist.js";
+import { applySetTableDataField } from "./set-table-data-field.js";
 
 export type ClassNameMode = "literal-only" | "cn-basic";
 export type Breakpoint = "base" | "sm" | "md" | "lg" | "xl";
@@ -18,10 +19,64 @@ const generate = require("@babel/generator").default as (
   opts?: Record<string, unknown>,
 ) => { code: string };
 
+function extractRowKeysFromSource(ast: t.File): string[] {
+  const keys: string[] = [];
+  traverse(ast, {
+    VariableDeclarator(path: NodePath<t.VariableDeclarator>) {
+      if (!t.isIdentifier(path.node.id) || path.node.id.name !== "tableData") {
+        return;
+      }
+      if (!t.isArrayExpression(path.node.init)) {
+        return;
+      }
+      for (const el of path.node.init.elements) {
+        if (!el || !t.isObjectExpression(el)) {
+          continue;
+        }
+        for (const prop of el.properties) {
+          if (
+            t.isObjectProperty(prop) &&
+            t.isIdentifier(prop.key, { name: "id" }) &&
+            t.isNumericLiteral(prop.value)
+          ) {
+            keys.push(String(prop.value.value));
+          }
+        }
+      }
+    },
+  });
+  return keys;
+}
+
+function templateLiteralMatchesHostId(attr: t.JSXAttribute, hostId: string, rowKeys: string[]): boolean {
+  if (!t.isJSXExpressionContainer(attr.value)) {
+    return false;
+  }
+  const expr = attr.value.expression;
+  if (!t.isTemplateLiteral(expr) || expr.expressions.length !== 1) {
+    return false;
+  }
+  const ex = expr.expressions[0];
+  const mapOk =
+    t.isIdentifier(ex, { name: "product" }) ||
+    t.isIdentifier(ex, { name: "item" }) ||
+    (t.isMemberExpression(ex) &&
+      !ex.computed &&
+      t.isIdentifier(ex.object, { name: "product" }) &&
+      t.isIdentifier(ex.property, { name: "id" }));
+  if (!mapOk) {
+    return false;
+  }
+  const prefix = expr.quasis[0]?.value.cooked ?? "";
+  const suffix = expr.quasis[1]?.value.cooked ?? "";
+  return rowKeys.some((key) => `${prefix}${key}${suffix}` === hostId);
+}
+
 function findHostOpening(
   ast: t.File,
   hostId: string,
 ): NodePath<t.JSXOpeningElement> | null {
+  const rowKeys = extractRowKeysFromSource(ast);
   let found: NodePath<t.JSXOpeningElement> | null = null;
   traverse(ast, {
     JSXOpeningElement(path: NodePath<t.JSXOpeningElement>) {
@@ -33,6 +88,11 @@ function findHostOpening(
           continue;
         }
         if (t.isStringLiteral(attr.value) && attr.value.value === hostId) {
+          found = path;
+          path.stop();
+          return;
+        }
+        if (rowKeys.length > 0 && templateLiteralMatchesHostId(attr, hostId, rowKeys)) {
           found = path;
           path.stop();
           return;
@@ -478,8 +538,19 @@ export async function applyPatchToSource(
     return { ok: false, code: "parse_error", message: String(e) };
   }
 
-  const openingPath = findHostOpening(ast, hostId);
-  if (!openingPath) {
+  const tableDataOps = ops.filter((o) => o.kind === "setTableDataField");
+  const hostOps = ops.filter((o) => o.kind !== "setTableDataField");
+
+  const openingPath =
+    hostOps.length > 0 ? findHostOpening(ast, hostId) : tableDataOps.length > 0 ? null : findHostOpening(ast, hostId);
+
+  if (hostOps.length > 0 && !openingPath) {
+    return { ok: false, code: "host_not_found", message: `No JSX host with data-nuvio-id="${hostId}"` };
+  }
+  if (ops.length === 0) {
+    return { ok: false, code: "patch_rejected", message: "No patch operations" };
+  }
+  if (hostOps.length === 0 && tableDataOps.length === 0) {
     return { ok: false, code: "host_not_found", message: `No JSX host with data-nuvio-id="${hostId}"` };
   }
 
@@ -487,15 +558,32 @@ export async function applyPatchToSource(
 
   try {
     for (const op of ops) {
-      if (op.kind === "setText") {
+      if (op.kind === "setTableDataField") {
+        applySetTableDataField(ast, op.arrayName, op.rowKey, op.field, op.value);
+      } else if (op.kind === "setText") {
+        if (!openingPath) {
+          throw new Error("setText requires a JSX host");
+        }
         applySetText(openingPath, op.text);
       } else if (op.kind === "mergeTailwindClassName") {
+        if (!openingPath) {
+          throw new Error("mergeTailwindClassName requires a JSX host");
+        }
         applyMergeClassName(openingPath, op.classNameFragment, classNameMode, activeBreakpoint);
       } else if (op.kind === "moveSibling") {
+        if (!openingPath) {
+          throw new Error("moveSibling requires a JSX host");
+        }
         applyMoveSibling(openingPath, op.direction);
       } else if (op.kind === "setHidden") {
+        if (!openingPath) {
+          throw new Error("setHidden requires a JSX host");
+        }
         applySetHidden(openingPath, op.hidden, classNameMode, activeBreakpoint);
       } else if (op.kind === "duplicateHost") {
+        if (!openingPath) {
+          throw new Error("duplicateHost requires a JSX host");
+        }
         duplicateNewId = applyDuplicateHost(ast, openingPath, hostId);
       }
     }
@@ -533,6 +621,8 @@ export async function applyPatchToSource(
         return op.hidden ? "hide element" : "show element";
       case "duplicateHost":
         return duplicateNewId ? `duplicate host → ${duplicateNewId}` : "duplicate host";
+      case "setTableDataField":
+        return `update ${op.arrayName}[${op.rowKey}].${op.field}`;
     }
   });
   const diffSummary = `${base}: ${opBits.join("; ")}`;

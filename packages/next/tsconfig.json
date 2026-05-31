@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "noEmit": true,
+    "paths": {
+      "@nuvio/vite-plugin/dev-session": ["../vite-plugin/dist/nuvio-dev-session.d.ts"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

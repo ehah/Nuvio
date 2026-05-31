@@ -4,6 +4,135 @@ Run before tagging a new **`@nuvio/*`** release on npm.
 
 ---
 
+## v0.5.0-beta.0 (Cards + Tables — Simple Mode)
+
+Engineering spec: [nuvio_v0.5.0.md](./nuvio_v0.5.0.md) §14 A, §15, §18.1.
+
+### A. Monorepo gate
+
+```bash
+pnpm install
+pnpm dogfood
+pnpm dev:tailadmin
+```
+
+Developer Details **off** for all scenarios below.
+
+### B. Beta acceptance (§14 A)
+
+**Signed:** 2026-05-31 — automated E2E (`pnpm v05:acceptance`) + unit audit. Developer Details **off**.
+
+| # | Task | Pass? | Notes |
+| - | ---- | ----- | ----- |
+| B1 | Change card Label text | Pass | SS2 — Card Label + Quick Style |
+| B2 | Change card Value text | Pass | Same flow as B1 (task menu → Value) |
+| B3 | Change Card Style | Pass | SS3 — Background / Padding |
+| B4 | Change Table Title | Pass | Table menu → Title |
+| B5 | Rename table column | Pass | SS6 — Column Header |
+| B6 | Edit static row text (Tier C) | Pass | SS5 — direct Product Name click |
+| B7 | Preview Changes human-readable | Pass | SS8 — no utilities / op names |
+| B8 | Apply to Code | Pass | Preview → Apply (E2E + manual) |
+| B9 | Undo | Pass | Overlay undo stack (unit + manual) |
+| B10 | Unsupported → Copy Fix Prompt | Pass | Plain reason; audit + unit tests |
+| B11 | Screenshot review SS1–SS10 | Pass | [docs/screenshots/v0.5/](./screenshots/v0.5/) |
+| B12 | Rule 0 audit | Pass | [SIMPLE_MODE_VISIBILITY_AUDIT.md](./SIMPLE_MODE_VISIBILITY_AUDIT.md) |
+
+---
+
+## v0.5.0 stable (full task router + P-C–P-F)
+
+Engineering spec: [nuvio_v0.5.0.md](./nuvio_v0.5.0.md) §14 B, §15, §18.2.
+
+**Gate:** `pnpm dogfood` green; Developer details **off** unless noted.
+
+| # | Scenario | Pass? | Notes |
+| - | -------- | ----- | ----- |
+| S1 | Button text + color | | `orders.filter` → Button → Text / Color |
+| S2 | Form label edit | | Form Elements page → Label task |
+| S3 | Navigation label | | Sidebar → `nav.dashboard` → Navigation items |
+| S4 | Chart title/subtitle/card | | `chart.sales.*` or `target.monthly.*` |
+| S5 | Section heading + description | | `dashboard.title` or demo-app hero |
+| S6 | Breakpoint edit | | Advanced → Responsive preview (Desktop / Mobile) |
+| S7 | Hide / Show | | Card Style or Table Style |
+| S8 | 10-minute new user | | [nuvioUser.md](./nuvioUser.md) only — no engineering doc |
+| S9 | Second external dogfood | | New tester; record friction here |
+| S10 | P-C–P-F instrumentation | | §12 gap table all ✅ |
+| S11 | Screenshot SS11–SS14 | | Marketing-ready flows |
+
+---
+
+## v0.4.0 stable (Vite + Next)
+
+Engineering spec: [nuvio_v0.4.0.md](./nuvio_v0.4.0.md) §9–11.2.
+
+### A. Monorepo gate
+
+```bash
+pnpm install
+pnpm dogfood
+pnpm --filter @nuvio/tailadmin-dogfood build
+pnpm --filter @nuvio/next run build   # after workspace link
+pnpm dogfood:next                      # optional Next production build
+```
+
+### B. Next dogfood (§9 scenario 10)
+
+```bash
+pnpm dev:next
+```
+
+Port **3001**, simple mode: repeat TailAdmin tasks 1–5 on `apps/next-dogfood`.
+
+| # | Task | Pass? | Notes |
+| - | ---- | ----- | ----- |
+| 10 | Metric + table on Next dev | | `@nuvio/next` custom server |
+
+---
+
+## v0.4.0-alpha.0 (Vite vibe-coder)
+
+Engineering spec: [nuvio_v0.4.0.md](./nuvio_v0.4.0.md) §9–11.1.
+
+### A. Monorepo gate
+
+```bash
+pnpm install
+pnpm dogfood
+pnpm --filter @nuvio/tailadmin-dogfood build
+```
+
+### B. TailAdmin acceptance (simple mode)
+
+Run `pnpm dev:tailadmin`. Keep **Developer details** off. Complete in under ~15 minutes:
+
+| # | Task | Pass? | Notes |
+| - | ---- | ----- | ----- |
+| 1 | Metric label + value color (Quick edits) | | `metric.orders.*` |
+| 2 | Table wrapper → Table mode → edit “Recent Orders” title | | `orders.title` |
+| 3 | Column header “Products” → “Items” | | `orders.header.products` |
+| 4 | Row 1 → change product name | | `tableData` in source |
+| 5 | Section background / padding | | `orders.section` |
+| 6 | Metric card bg at Desktop (xl) | | breakpoint label + apply |
+| 7 | Tablet preset → table section padding | | |
+| 8 | Hide section → Show again | | `orders.section` |
+| 9 | Blocked edit → Copy fix context | | optional `cn()` host |
+
+### C. Engineering record (v0.4 alpha)
+
+| Check | Pass? | Notes |
+| ----- | ----- | ----- |
+| Quick edits + More styles collapse | | |
+| Container guidance + plain errors | | |
+| Table mode + §4.2 ids on Recent Orders | | |
+| `TableCell`/`TableRow` forward `data-nuvio-id` | | |
+| Outline (friendly labels) | | |
+| `pnpm dogfood` green | | |
+| `nuvioUser.md` table block present | | |
+
+**Stable additions:** `@nuvio/next`, Outline search, handoff action bar, open-in-editor.
+
+---
+
 ## v0.3.0-alpha.0 (Phase B)
 
 Engineering spec: [nuvio_v0.3.0.md](./nuvio_v0.3.0.md) §9–12.

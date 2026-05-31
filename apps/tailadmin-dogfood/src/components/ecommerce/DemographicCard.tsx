@@ -3,25 +3,31 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
 import CountryMap from "./CountryMap";
-
 export default function DemographicCard() {
   const [isOpen, setIsOpen] = useState(false);
-
   function toggleDropdown() {
     setIsOpen(!isOpen);
   }
-
   function closeDropdown() {
     setIsOpen(false);
   }
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+    <div
+      className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6"
+      data-nuvio-id="demo.card"
+    >
       <div className="flex justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+          <h3
+            className="text-lg font-semibold text-gray-800 xl:text-gray-500 xl:text-lg dark:text-white/90"
+            data-nuvio-id="demo.title"
+          >
             Customers Demographic
           </h3>
-          <p className="mt-1 text-gray-500 text-theme-sm dark:text-gray-400">
+          <p
+            className="mt-1 text-gray-500 text-theme-sm dark:text-gray-400"
+            data-nuvio-id="demo.subtitle"
+          >
             Number of customer based on country
           </p>
         </div>

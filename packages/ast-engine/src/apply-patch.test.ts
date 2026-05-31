@@ -56,6 +56,24 @@ describe("applyPatchToSource", () => {
   const fixture = (name: string): string =>
     fs.readFileSync(path.resolve(process.cwd(), "fixtures", name), "utf8");
 
+  it("golden: v04 setTableDataField updates tableData row name", async () => {
+    const src = fixture("v04-recent-orders-table-data.tsx");
+    const r = await applyPatchToSource(src, "/proj/v04-recent-orders-table-data.tsx", "orders.row.1.nameText", [
+      {
+        kind: "setTableDataField",
+        arrayName: "tableData",
+        rowKey: "1",
+        field: "name",
+        value: "MacBook Pro 14”",
+      },
+    ]);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.source).toMatch(/MacBook Pro 14/);
+      expect(r.source).not.toMatch(/MacBook Pro 13/);
+    }
+  });
+
   it("golden: simple setText on a single JSXText child", async () => {
     const src = `
 export function X() {
