@@ -4,9 +4,12 @@ All notable changes to published `@nuvio/*` packages are documented here. This p
 
 ## [Unreleased]
 
+## [0.5.3] — 2026-06-03 (Vite 8 peer)
+
 ### Changed
 
-- `@nuvio/vite-plugin` peer `vite` now includes **^8.0.0** (removes install warning on current `create vite` templates). Publish **0.5.3** to npm when ready.
+- `@nuvio/vite-plugin` peer `vite` now includes **^8.0.0** (removes pnpm peer warning on current `create vite` react-ts templates).
+- All public `@nuvio/*` packages aligned at **0.5.3** (no overlay or CLI behavior changes).
 
 ## [0.5.2] — 2026-06-03 (CLI: overlay dev wiring fix)
 

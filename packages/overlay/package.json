@@ -1,6 +1,6 @@
 {
   "name": "@nuvio/overlay",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Nuvio dev overlay: edit mode, selection, Editor panel, Validate/Apply/Undo against the Vite dev server.",
   "license": "MIT",
   "repository": {

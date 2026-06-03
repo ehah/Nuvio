@@ -1,6 +1,6 @@
 {
   "name": "@nuvio/ast-engine",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Nuvio AST patch engine: parse TSX/JSX, apply whitelist Tailwind merges and text edits, format with Prettier.",
   "license": "MIT",
   "repository": {

@@ -1,6 +1,6 @@
 {
   "name": "@nuvio/shared",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Nuvio wire protocol (Zod), shared types, and path helpers for dev tooling.",
   "license": "MIT",
   "repository": {

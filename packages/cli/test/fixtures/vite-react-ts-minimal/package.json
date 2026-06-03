@@ -10,8 +10,8 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@nuvio/overlay": "0.5.2",
-    "@nuvio/vite-plugin": "0.5.2",
+    "@nuvio/overlay": "0.5.3",
+    "@nuvio/vite-plugin": "0.5.3",
     "@vitejs/plugin-react": "^4.3.4",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3",

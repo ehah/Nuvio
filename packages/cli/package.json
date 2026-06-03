@@ -1,6 +1,6 @@
 {
   "name": "@nuvio/cli",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Nuvio CLI: one-command Vite + React onboarding (nuvio init).",
   "license": "MIT",
   "repository": {
