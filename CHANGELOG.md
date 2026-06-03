@@ -4,6 +4,18 @@ All notable changes to published `@nuvio/*` packages are documented here. This p
 
 ## [Unreleased]
 
+## [0.5.1] — 2026-06-03 (CLI onboarding)
+
+### Added
+
+- `@nuvio/cli` with `nuvio init` — install, wire Vite, mount overlay, add starter `page.title`, create `nuvio/START_HERE.md` + `nuvio/AGENT.md`
+- `pnpm v051:acceptance` smoke script
+
+### Changed
+
+- All public `@nuvio/*` packages bumped to `0.5.1` for aligned installs
+- [`nuvioUser.md`](docs/nuvioUser.md) and root README lead with Quick Start (`pnpm dlx @nuvio/cli init`)
+
 ## [0.5.0-beta.0] — 2026-05-31 (Cards + Tables beta — Rule 5 Simple Mode)
 
 Beta per [nuvio_v0.5.0.md](docs/nuvio_v0.5.0.md) §18.1.

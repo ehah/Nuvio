@@ -6,15 +6,24 @@ Visual editing layer for React + Vite + Tailwind: localhost overlay, source-back
 
 **Repository:** [github.com/ehah/Nuvio](https://github.com/ehah/Nuvio) · **License:** MIT · **Release:** `0.3.0-alpha.0` (Phase B) · **Stable:** [v0.1.0](https://github.com/ehah/Nuvio/releases/tag/v0.1.0) (`latest`)
 
-## Install in your project (~5 minutes)
+## Install in your project (~2 minutes)
+
+```bash
+pnpm dlx @nuvio/cli init
+pnpm dev
+```
+
+Then turn **Edit** on in the Nuvio chip and click the starter element (`page.title`). See `nuvio/START_HERE.md` in your project after init.
+
+You need **Node 20+**, a **Vite 5/6 + React** app, and **Tailwind CSS 3.x or 4.x** on the host app.
+
+**v0.2+:** overlay UI is **self-contained** — you do **not** add `@nuvio/overlay` to Tailwind `content`. Full guide: [nuvioUser.md](docs/nuvioUser.md).
+
+### Manual install (without CLI)
 
 ```bash
 pnpm add -D @nuvio/vite-plugin @nuvio/overlay
 ```
-
-You need **Node 20+**, a **Vite 5/6 + React** app, and **Tailwind CSS 3.x or 4.x** on the host app.
-
-**v0.2+ (monorepo / upcoming alpha):** overlay UI is **self-contained** — you do **not** add `@nuvio/overlay` to Tailwind `content`. See [nuvioUser.md](docs/nuvioUser.md).
 
 ### 1. Install packages
 

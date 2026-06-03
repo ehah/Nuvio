@@ -16,6 +16,7 @@
 | --- | --- |
 | [`nuvio_v0.4.0.md`](nuvio_v0.4.0.md) | **Engine baseline** — patch ops, index v4, table contract, fail-closed rules |
 | [`nuvioUser.md`](nuvioUser.md) | Public setup + instrumentation copy-paste (vibe coders read this, not this doc) |
+| [`nuvio_v0.5.1.md`](nuvio_v0.5.1.md) | **CLI onboarding** — `@nuvio/cli init` (post–0.5.0 stable) |
 | [`DOGFOOD.md`](DOGFOOD.md) | Manual pass/fail checklists per release tag |
 | [`COMPATIBILITY.md`](COMPATIBILITY.md) | Public support matrix (Vite-only for v0.5 marketing) |
 | [`LIMITATIONS.md`](LIMITATIONS.md) | Honest boundaries |
@@ -997,6 +998,8 @@ Mandatory, always visible, same undo stack as v0.4.
 ---
 
 # 13. Setup & onboarding
+
+**Automated setup (0.5.1+):** [`nuvio_v0.5.1.md`](nuvio_v0.5.1.md) — `pnpm dlx @nuvio/cli init`.
 
 ## Goal
 

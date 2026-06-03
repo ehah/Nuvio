@@ -4,7 +4,24 @@
 
 You only need this guide and a terminal. Copy the commands exactly.
 
+**Current release:** [`@nuvio/*` **0.5.1** on npm](https://www.npmjs.com/org/nuvio) — full task router (cards, tables, buttons, forms, navigation, charts, sections).
+
 **v0.2+:** Nuvio ships its own overlay styles. You do **not** add `@nuvio/overlay` to Tailwind `content`.
+
+---
+
+## Quick Start (recommended)
+
+From your Vite + React + Tailwind project folder:
+
+```bash
+pnpm dlx @nuvio/cli@0.5.1 init
+pnpm dev
+```
+
+Then: Nuvio chip → **Edit** on → click the starter element (usually the page title) → **Preview Changes** → **Apply to Code**.
+
+After init, open `nuvio/START_HERE.md` in your project for local steps.
 
 ---
 
@@ -13,7 +30,7 @@ You only need this guide and a terminal. Copy the commands exactly.
 1. Run your app like normal (`pnpm dev`).
 2. Turn on **Edit** in the little Nuvio bar on the page.
 3. Click something on the page you marked as editable.
-4. Change text or styles in the side panel — pick a **task** (Label, Card Style, Table Title, etc.) when prompted.
+4. Change text or styles in the side panel — pick a **task** when prompted (Label, Card Style, Table Title, Button Text, Form Label, Navigation Link, Chart Title, Section Heading, etc.).
 5. Use **Quick Style** chips (Normal, Muted, Strong, Larger) for text — no need to know Tailwind.
 6. Hit **Preview Changes**, then **Apply to Code** — your source files update.
 
@@ -38,9 +55,19 @@ If you are starting from zero, use **“Brand new test project”** at the botto
 
 ---
 
-## Step 1 — Install Nuvio (one command)
+## Manual setup
+
+Use this if you prefer not to use the CLI, or need card/table/nav instrumentation patterns.
+
+### Step 1 — Install Nuvio (one command)
 
 Open terminal in your **project folder** (the folder that has `package.json`).
+
+```bash
+pnpm add -D @nuvio/vite-plugin@0.5.0 @nuvio/overlay@0.5.0
+```
+
+Or install latest:
 
 ```bash
 pnpm add -D @nuvio/vite-plugin @nuvio/overlay
@@ -115,7 +142,8 @@ On any element you want to click and edit, add **`data-nuvio-id`** with a short 
 
 **Rules (keep it simple):**
 
-- Use a **unique** name per element (like `home.title`, `nav.logo`, `card.1`).
+- Use a **unique** name per element (like `home.title`, `nav.dashboard`, `card.1`).
+- Use a **string literal** for `data-nuvio-id` (not `{condition ? "id" : undefined}`) so Nuvio can find it in source.
 - Do **not** use random IDs that change every refresh.
 - Keep `className="..."` as normal text in quotes on that same tag if you want to edit Tailwind classes.
 
@@ -189,7 +217,29 @@ export function RecentOrders() {
 1. Click the table area → **Table mode** → pick **Section**, **Column headers**, or **Rows**.
 2. Edit title/header text in **Quick edits**.
 3. For row product names, select a row then edit text (updates `tableData` in source when indexed).
-4. Stuck? Use **Copy fix context** on the error banner.
+4. Stuck? Use **Copy Fix Prompt** on the error banner.
+
+### Button, form, nav, and section (v0.5)
+
+Add ids on the **element you click** — usually a button, label, link text, or heading:
+
+```tsx
+<button data-nuvio-id="orders.filter" className="rounded-lg px-4 py-2">
+  Filter
+</button>
+
+<label data-nuvio-id="form.email.label" className="...">Email</label>
+<input data-nuvio-id="form.email.input" placeholder="you@example.com" className="..." />
+
+{/* Nav link — id must be a string literal on the clickable text */}
+<span data-nuvio-id="nav.dashboard" className="inline-block">Dashboard</span>
+
+<h1 data-nuvio-id="dashboard.title" className="text-2xl font-bold">
+  Dashboard
+</h1>
+```
+
+In the editor, pick **Text**, **Label**, **Navigation items**, **Heading**, etc. from the task menu after you click.
 
 ---
 
@@ -211,9 +261,9 @@ Open the URL it prints (often `http://localhost:5173`).
 6. Click **Apply to Code** (writes to your code file).
 7. Wrong? Click **Undo last**.
 
-You should see the page update and your file change in the editor (Cursor/VS Code).
+You should see the page update and your file change in your code editor.
 
-The chip shows **diagnostics** (Vite channel, indexed id count, file/line, className patchability, risk level) when something is wrong — read those messages before guessing.
+With **Developer details** off (default), the panel stays plain-language only. Turn on **Developer details** in the panel header if you need file paths or technical diagnostics.
 
 ---
 
@@ -238,7 +288,7 @@ cd my-nuvio-app
 pnpm install
 pnpm add -D tailwindcss@3 postcss autoprefixer
 npx tailwindcss init -p
-pnpm add -D @nuvio/vite-plugin @nuvio/overlay
+pnpm add -D @nuvio/vite-plugin@0.5.0 @nuvio/overlay@0.5.0
 ```
 
 Then do **Steps 2–5** above.
@@ -316,10 +366,10 @@ If you are on **Nuvio 0.1.x**, add the overlay path to Tailwind `content` (see [
 Send them this — no tech lecture needed:
 
 ```text
-Try Nuvio — edit your React app in the browser while it runs locally.
+Try Nuvio 0.5.0 — edit your React app in the browser while it runs locally.
 
 1) In your Vite + React + Tailwind project:
-   pnpm add -D @nuvio/vite-plugin @nuvio/overlay
+   pnpm add -D @nuvio/vite-plugin@0.5.0 @nuvio/overlay@0.5.0
 
 2) Follow the simple guide (setup + Edit / Preview / Apply to Code):
    [paste link to this file in your repo]
@@ -328,6 +378,7 @@ Try Nuvio — edit your React app in the browser while it runs locally.
    https://www.npmjs.com/org/nuvio
 
 Works on your machine only — not for production deploys.
+Cards, tables, buttons, forms, nav links, and section headings in Simple Mode.
 No Tailwind content hack for the overlay on v0.2+.
 ```
 
@@ -344,15 +395,16 @@ No Tailwind content hack for the overlay on v0.2+.
 
 | I want to… | Do this |
 | ---------- | ------- |
-| Install | `pnpm add -D @nuvio/vite-plugin @nuvio/overlay` |
+| Install (0.5.0) | `pnpm add -D @nuvio/vite-plugin@0.5.0 @nuvio/overlay@0.5.0` |
 | Start app | `pnpm dev` |
 | Enable editing | Nuvio chip → **Edit** on |
 | Save a change | **Preview Changes** → **Apply to Code** |
-| Style text quickly | **Quick Style** chips on Label / Value / table text screens |
+| Style text quickly | **Quick Style** chips on text task screens |
+| Edit a button / form / nav link | Add `data-nuvio-id` → click → task menu (Text, Label, etc.) |
 | Go back in a task | **← Orders Card** / **← Recent Orders Table** under the title |
 | Undo | **Undo last** on the chip |
-| Mark editable UI | `data-nuvio-id="something.unique"` on the tag |
-| Edit a dashboard table | Use §4.2 ids + Table mode in the panel |
+| Mark editable UI | `data-nuvio-id="something.unique"` — string literal, unique per project |
+| Edit a dashboard table | Use the **Table block** pattern above + Table mode in the panel |
 | Fix clipped UI | **Reset position** on chip/editor |
 | When apply is blocked | **Copy Fix Prompt** — paste into your editor or AI assistant |
 
@@ -361,9 +413,9 @@ No Tailwind content hack for the overlay on v0.2+.
 ## More detail (optional)
 
 - Known limits: [LIMITATIONS.md](./LIMITATIONS.md)
-- Supported versions: [COMPATIBILITY.md](./COMPATIBILITY.md)
-- Maintainer dogfood (v0.2 fixtures): [DOGFOOD.md](./DOGFOOD.md)
+- Supported versions: [COMPATIBILITY.md](./COMPATIBILITY.md) (Vite public; **0.5.0** stable)
+- Maintainer dogfood: [DOGFOOD.md](./DOGFOOD.md)
 - Dev-only behavior: [DEV_ONLY.md](./DEV_ONLY.md)
-- v0.2.0 engineering spec: [nuvio_v0.2.0.md](./nuvio_v0.2.0.md)
-- v0.4 vibe-coder spec (maintainers): [nuvio_v0.4.0.md](./nuvio_v0.4.0.md)
 - v0.5 task router spec (maintainers): [nuvio_v0.5.0.md](./nuvio_v0.5.0.md)
+- v0.4 vibe-coder spec (maintainers): [nuvio_v0.4.0.md](./nuvio_v0.4.0.md)
+- v0.2.0 engineering spec: [nuvio_v0.2.0.md](./nuvio_v0.2.0.md)

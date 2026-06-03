@@ -1,6 +1,6 @@
 {
   "name": "@nuvio/vite-plugin",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Nuvio Vite plugin: dev WebSocket, source index for data-nuvio-id, secure patch writes.",
   "license": "MIT",
   "repository": {

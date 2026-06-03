@@ -71,6 +71,45 @@ Use only [nuvioUser.md](./nuvioUser.md) and `pnpm --filter @nuvio/demo-app dev` 
 
 ---
 
+## v0.5.1 — CLI onboarding (`@nuvio/cli`)
+
+Engineering spec: [nuvio_v0.5.1.md](./nuvio_v0.5.1.md) §15 (S8b), §17.
+
+**Gate:** `pnpm --filter @nuvio/cli test` green; `pnpm v051:acceptance` green; `pnpm dogfood` unchanged (no overlay behavior changes).
+
+### A. Automated gate
+
+```bash
+pnpm install
+pnpm --filter @nuvio/cli test
+pnpm v051:acceptance
+pnpm dogfood
+```
+
+### B. S8b — CLI 10-minute path (required before npm publish)
+
+**Profile:** New user, no [nuvioUser.md](./nuvioUser.md), Developer Details off.
+
+```bash
+pnpm create vite nuvio-s8b-test --template react-ts
+cd nuvio-s8b-test
+pnpm install
+pnpm dlx @nuvio/cli@0.5.1 init --yes
+pnpm dev
+```
+
+| # | Check | Pass? | Notes |
+| - | ----- | ----- | ----- |
+| S8b-1 | Chip index ≥ 1 id (`page.title`) | | |
+| S8b-2 | Click starter → edit → Preview → Apply → HMR | | |
+| S8b-3 | Completed in under 10 min without opening `nuvioUser.md` | | |
+
+**Signed:** _pending manual run before `v0.5.1` tag_
+
+Optional: extend `scripts/v051-cli-acceptance.mjs` with Playwright apply loop (not required for first publish).
+
+---
+
 ## v0.4.0 stable (Vite + Next)
 
 Engineering spec: [nuvio_v0.4.0.md](./nuvio_v0.4.0.md) §9–11.2.

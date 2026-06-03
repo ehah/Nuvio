@@ -14,6 +14,8 @@
     "v05:acceptance:beta": "node scripts/v05-beta-acceptance.mjs --url=http://localhost:5173",
     "v05:acceptance:stable": "node scripts/v05-stable-acceptance.mjs --url=http://localhost:5173 --demo-url=http://localhost:5174",
     "v05:acceptance": "pnpm v05:acceptance:beta && pnpm v05:acceptance:stable",
+    "test:cli": "pnpm --filter @nuvio/cli test",
+    "v051:acceptance": "node scripts/v051-cli-acceptance.mjs",
     "publish:alpha": "pnpm -r publish --filter \"./packages/*\" --access public --tag alpha",
     "publish:stable": "pnpm -r publish --filter \"./packages/*\" --access public"
   },
