@@ -90,21 +90,30 @@ pnpm dogfood
 
 **Profile:** New user, no [nuvioUser.md](./nuvioUser.md), Developer Details off.
 
+**Pre-publish maintainer run** (CLI from workspace; packages linked at `0.5.1`):
+
 ```bash
 pnpm create vite nuvio-s8b-test --template react-ts
 cd nuvio-s8b-test
 pnpm install
-pnpm dlx @nuvio/cli@0.5.1 init --yes
+pnpm add -D tailwindcss@3 postcss autoprefixer
+npx tailwindcss init -p
+# src/index.css: @tailwind base/components/utilities
+node /path/to/Nuvio/packages/cli/dist/cli-entry.js init --yes --no-install
+pnpm add -D /path/to/Nuvio/packages/vite-plugin /path/to/Nuvio/packages/overlay
+# If overlay CSS 403: add server.fs.allow for monorepo in vite.config.ts (linked packages only)
 pnpm dev
 ```
 
+**Post-publish** (consumer path): `pnpm dlx @nuvio/cli@0.5.1 init --yes` then `pnpm dev` (no `fs.allow` needed).
+
 | # | Check | Pass? | Notes |
 | - | ----- | ----- | ----- |
-| S8b-1 | Chip index ≥ 1 id (`page.title`) | | |
-| S8b-2 | Click starter → edit → Preview → Apply → HMR | | |
-| S8b-3 | Completed in under 10 min without opening `nuvioUser.md` | | |
+| S8b-1 | Chip index ≥ 1 id (`page.title`) | Pass | Connected · 1 editable area; `page.title` on h1 |
+| S8b-2 | Click starter → edit → Preview → Apply → HMR | Pass | Safari; Section Title text apply (`Get started 101` → `102`) |
+| S8b-3 | Completed in under 10 min without opening `nuvioUser.md` | Pass | CLI + `nuvio/START_HERE.md` only |
 
-**Signed:** _pending manual run before `v0.5.1` tag_
+**Signed:** 2026-06-03 — manual S8b on `/tmp/nuvio-s8b-test` + automated gates (§A). Developer Details **off**.
 
 Optional: extend `scripts/v051-cli-acceptance.mjs` with Playwright apply loop (not required for first publish).
 

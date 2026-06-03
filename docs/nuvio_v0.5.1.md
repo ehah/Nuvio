@@ -791,7 +791,7 @@ Playwright apply loop optional; manual S8b still required once before npm publis
 
 - [x] [`nuvioUser.md`](nuvioUser.md) Quick Start + Manual setup split
 - [x] [`README.md`](../README.md) leads with CLI
-- [ ] S8b signed in [`DOGFOOD.md`](DOGFOOD.md)
+- [x] S8b signed in [`DOGFOOD.md`](DOGFOOD.md)
 - [x] [`CHANGELOG.md`](../CHANGELOG.md) 0.5.1 entry
 
 ### 17.3 Explicitly NOT required
