@@ -160,7 +160,7 @@ export default function StatisticsChart() {
           </h3>
           <p
             data-nuvio-id="chart.sales.subtitle"
-            className="mt-1 text-theme-sm xl:text-lime-400 xl:bg-gray-500 dark:text-gray-400"
+            className="mt-1 text-theme-sm xl:bg-gray-500 xl:text-sm xl:font-semibold xl:text-gray-900 dark:text-gray-400"
           >
             Target you've set for each month 1001
           </p>

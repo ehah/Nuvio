@@ -32,6 +32,25 @@ export function parseClassNameByBreakpoint(className: string): BreakpointBuckets
   return buckets;
 }
 
+/** Pseudo/state prefixes ignored when reading the visible style at rest (not hover/focus). */
+const INTERACTIVE_VARIANT_RE =
+  /^(?:hover|focus|focus-within|active|disabled|group-hover|peer-hover|first|last|odd|even):/;
+
+function isInteractiveVariantToken(token: string): boolean {
+  return INTERACTIVE_VARIANT_RE.test(token);
+}
+
+function isDarkVariantToken(token: string): boolean {
+  return /^dark:/.test(token);
+}
+
+function includeDarkVariantsInRead(): boolean {
+  if (typeof document === "undefined") {
+    return false;
+  }
+  return document.documentElement.classList.contains("dark");
+}
+
 /** Strip state/variant prefixes (dark:, hover:, …) for utility matching. */
 export function stripVariantPrefixes(token: string): string {
   let t = token;
@@ -54,18 +73,26 @@ export function flattenTokensAtBreakpoint(className: string, activeBreakpoint: B
   const buckets = parseClassNameByBreakpoint(className);
   const idx = BREAKPOINT_ORDER.indexOf(activeBreakpoint);
   const out: string[] = [];
+  const includeDark = includeDarkVariantsInRead();
   for (const tok of buckets.passthrough) {
-    if (/^dark:/.test(tok)) {
-      out.push(stripVariantPrefixes(tok));
+    if (isInteractiveVariantToken(tok)) {
+      continue;
+    }
+    if (isDarkVariantToken(tok)) {
+      if (includeDark) {
+        out.push(stripVariantPrefixes(tok));
+      }
+      continue;
     }
   }
   for (let i = 0; i <= idx; i++) {
     out.push(...buckets[BREAKPOINT_ORDER[i]]);
   }
   for (const tok of buckets.passthrough) {
-    if (!/^dark:/.test(tok)) {
-      out.push(stripVariantPrefixes(tok));
+    if (isInteractiveVariantToken(tok) || isDarkVariantToken(tok)) {
+      continue;
     }
+    out.push(stripVariantPrefixes(tok));
   }
   return out;
 }

@@ -1102,20 +1102,16 @@ select.nuvio-control {
 }
 
 .nuvio-color-popover {
-  position: absolute;
-  left: 0;
-  right: 0;
-  z-index: 20;
-  margin-top: 4px;
-  max-height: min(20rem, 50vh);
   overflow: auto;
   border-radius: var(--nuvio-radius-inner);
   border: 1px solid var(--nuvio-border-strong);
-  background: rgba(3, 7, 18, 0.94);
-  -webkit-backdrop-filter: var(--nuvio-inner-blur);
-  backdrop-filter: var(--nuvio-inner-blur);
+  background: rgb(15, 23, 42);
   padding: 10px;
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+}
+
+.nuvio-color-popover--fixed {
+  pointer-events: auto;
 }
 
 .nuvio-color-specials {
@@ -1247,7 +1243,10 @@ select.nuvio-control {
 }
 
 .nuvio-card--actions {
+  position: relative;
+  z-index: 1;
   border-color: rgba(56, 189, 248, 0.25);
+  background: rgb(15, 23, 42);
 }
 
 .nuvio-action-stack {

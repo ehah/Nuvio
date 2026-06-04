@@ -29,6 +29,14 @@ describe("readAlphaPicksFromClassName", () => {
     expect(readAlphaPicksFromClassName("").fontSize).toBe("");
   });
 
+  it("reads xl text color on filter-style buttons without hover overriding", () => {
+    const picks = readAlphaPicksFromClassName(
+      "inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 font-medium text-gray-700 shadow-theme-xs xl:text-orange-500 hover:bg-gray-50 hover:text-gray-800 dark:text-gray-400",
+      "xl",
+    );
+    expect(picks.textColor).toBe("text-orange-500");
+  });
+
   it("reads responsive and variant-prefixed colors at active breakpoint", () => {
     const atXl = readAlphaPicksFromClassName(
       "rounded-2xl border border-gray-200 bg-white xl:bg-red-100 dark:bg-white/[0.03]",

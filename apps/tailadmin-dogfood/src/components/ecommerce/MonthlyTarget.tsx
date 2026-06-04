@@ -75,7 +75,7 @@ export default function MonthlyTarget() {
               Monthly Target 101
             </h3>
             <p
-              className="mt-1 text-gray-500 text-theme-sm dark:text-gray-400"
+              className="mt-1 text-zinc-400 dark:text-gray-400"
               data-nuvio-id="target.monthly.subtitle"
             >
               Target you’ve set for each month

@@ -14,7 +14,7 @@ describe("flattenTokensAtBreakpoint", () => {
     );
     expect(tokens).toContain("bg-white");
     expect(tokens).toContain("bg-red-100");
-    expect(tokens).toContain("bg-white/[0.03]");
+    expect(tokens).not.toContain("bg-white/[0.03]");
   });
 
   it("omits xl utilities when active breakpoint is base", () => {
@@ -38,5 +38,13 @@ describe("color utility detection", () => {
       "xl",
     );
     expect(lastMatchingToken(tokens, isTextColorUtility)).toBe("text-red-600");
+  });
+
+  it("ignores hover text colors so xl responsive color matches the canvas", () => {
+    const tokens = flattenTokensAtBreakpoint(
+      "text-gray-700 xl:text-orange-500 hover:text-gray-800",
+      "xl",
+    );
+    expect(lastMatchingToken(tokens, isTextColorUtility)).toBe("text-orange-500");
   });
 });
