@@ -1,6 +1,6 @@
 # nuvio
 
-**v1.0.0 — visual editor for React + Vite + Tailwind.** Click UI in the browser, edit text and Tailwind classes, preview the diff, apply to source.
+**v1.0.0 — visual editor for React + Vite + Tailwind.** Click UI in the browser, edit text and Tailwind classes, or define a project **Brand Kit** and apply it by category across pages.
 
 Maximum validated coverage for the **Vite + Tailwind** stack: Vite 5/6/8, Tailwind 3/4, `cn()` + conditional classes, shadcn / TailAdmin / DaisyUI paths, click-to-tag, and CLI diagnostics.
 
@@ -19,19 +19,29 @@ Stop burning AI prompts on padding, colors, and layout tweaks — edit visually,
 
 ## Demo
 
-**Edit on → click an element → Preview Changes → Apply to Code** (about 1 minute).
+### Element editing
+
+**Edit on → click an element → Preview Changes → Apply to Code**
 
 <img src="docs/assets/nuvio-22.gif" width="100%" alt="nuvio demo: Edit on → click an element → Preview Changes → Apply to Code" />
 
-Try it yourself after [Quick Start](#quick-start), or run the maintainer demo app:
+### Brand Kit (project branding)
+
+**Edit on → Brand Kit tab → pick a category → Save Brand → Validate → Apply** on the current page. Navigate to another route and repeat per category — one saved brand in `nuvio/brand.json`, applied across your app.
+
+<img src="docs/assets/nuvio-brand-kit26.gif" width="100%" alt="Brand Kit demo: define heading styles, save brand, validate and apply across dashboard pages" />
+
+Try it on the TailAdmin dogfood app after [Quick Start](#quick-start):
 
 ```bash
-pnpm build && pnpm --filter @nuvio/demo-app dev
+pnpm build && pnpm dev:tailadmin
 ```
 
-Open `http://localhost:5174` → nuvio chip → **Edit on**.
+Open the printed URL → nuvio chip → **Edit on** → **Brand Kit** tab.
 
-Asset path: [docs/assets/nuvio-22.gif](docs/assets/nuvio-22.gif) · More captures: [docs/screenshots/v0.5/README.md](docs/screenshots/v0.5/README.md)
+Or run the smaller demo app: `pnpm build && pnpm --filter @nuvio/demo-app dev` → `http://localhost:5174`.
+
+Assets: [nuvio-22.gif](docs/assets/nuvio-22.gif) · [nuvio-brand-kit26.gif](docs/assets/nuvio-brand-kit26.gif) · More captures: [docs/screenshots/v0.5/README.md](docs/screenshots/v0.5/README.md)
 
 ---
 
@@ -47,6 +57,8 @@ pnpm dev
 ```
 
 Open localhost → **Edit on** → click an element (or **Make Editable** on untagged UI) → **Preview Changes** → **Apply to Code**.
+
+For **Brand Kit**, open the **Brand Kit** tab → choose a category (Card, Heading, Text, Button, …) → adjust presets → **Save Brand** → **Validate** → **Apply** on that page.
 
 That's it. After init, see `nuvio/START_HERE.md` in your project.
 
@@ -67,7 +79,8 @@ Full walkthrough: [docs/nuvioUser.md](docs/nuvioUser.md) · Coverage matrix: [do
 | **`className`** | literals, `cn()`, conditional `cn`, static `classnames()` |
 | **Libraries** | shadcn · TailAdmin · DaisyUI (detection + guides) |
 | **Onboarding** | `nuvio init` + click-to-tag (no manual id for first edit) |
-| **CLI** | `doctor` · `scan` · `stats` |
+| **Brand Kit** | Project brand (`nuvio/brand.json`) · per-category bulk apply · cross-page |
+| **CLI** | `doctor` · `scan` · `stats` · `brand scan` · `coverage verify` |
 
 Details: [docs/COVERAGE.md](docs/COVERAGE.md) · [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) · [docs/LIMITATIONS.md](docs/LIMITATIONS.md)
 
@@ -77,7 +90,7 @@ Details: [docs/COVERAGE.md](docs/COVERAGE.md) · [docs/COMPATIBILITY.md](docs/CO
 | ------- | --- | -------------- |
 | [vite-basic](examples/vite-basic/) | `pnpm --filter @nuvio/example-vite-basic dev` | init + click-to-tag |
 | [shadcn-dashboard](examples/shadcn-dashboard/) | `pnpm --filter @nuvio/example-shadcn-dashboard dev` | shadcn `cn()` + Card/Button |
-| [tailadmin-demo](examples/tailadmin-demo/) | `pnpm dev:tailadmin` | Full TailAdmin dashboard |
+| [tailadmin-demo](examples/tailadmin-demo/) | `pnpm dev:tailadmin` | Full TailAdmin dashboard + **Brand Kit** dogfood |
 
 See [examples/README.md](examples/README.md).
 
@@ -93,10 +106,11 @@ After `nuvio init`, nuvio:
 4. Adds a starter editable region (`page.title` on your first heading)
 5. Lets you click elements and edit in the browser — tagged or **Make Editable** (click-to-tag)
 6. Generates source-backed patches and writes them to your files
+7. **Brand Kit** — save one project brand, then **Validate** and **Apply** by UI category (card, heading, text, button, table, form, badge) on each page
 
 **Preview before apply.** **Undo** after apply. **No production bundle** — the overlay renders nothing when `import.meta.env.DEV` is false.
 
-Click untagged elements to tag them automatically, or add `data-nuvio-id="unique.name"` manually. See `nuvio/AGENT.md` after init.
+Click untagged elements to tag them automatically, or add `data-nuvio-id="unique.name"` manually. Brand Kit uses the same ids plus optional [PCC manifests](apps/tailadmin-dogfood/nuvio/pages/) (`nuvio/pages/*.pcc.yaml`) for per-page coverage. See `nuvio/AGENT.md` after init.
 
 ---
 
