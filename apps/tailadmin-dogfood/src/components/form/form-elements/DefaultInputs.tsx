@@ -26,12 +26,12 @@ export default function DefaultInputs() {
   return (
     <div
       data-nuvio-id="forms.default.card"
-      className="bg-white border border-rose-300 rounded-md p-6 dark:border-gray-800 dark:bg-white/[0.03]"
+      className="bg-white border border-rose-300 rounded-md p-6 xl:bg-white xl:border xl:border-gray-200 xl:rounded-md xl:p-6 xl:shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
     >
       <div className="px-6 py-5">
         <h3
           data-nuvio-id="forms.default.title"
-          className="text-lg font-semibold text-rose-600 xl:text-lg xl:font-semibold xl:text-green-600 dark:text-white/90"
+          className="text-lg font-semibold text-rose-600 xl:text-base xl:font-medium xl:text-green-600 dark:text-white/90"
         >
           Default Inputs
         </h3>
@@ -39,14 +39,16 @@ export default function DefaultInputs() {
       <div className="border-t border-gray-100 p-4 dark:border-gray-800 sm:p-6">
         <div className="space-y-6">
           <div>
-            <Label htmlFor="input">Input</Label>
-            <Input type="text" id="input" />
+            <Label htmlFor="input" data-nuvio-id="forms.default.input.label">
+              Input
+            </Label>
+            <Input type="text" id="input" data-nuvio-id="forms.default.input" />
           </div>
           <div>
             <label
               htmlFor="inputTwo"
               data-nuvio-id="form.email.label"
-              className="mb-1.5 block text-sm font-medium text-gray-700 xl:text-sm xl:font-medium xl:text-gray-700 dark:text-gray-400"
+              className="mb-1.5 block text-sm font-medium text-gray-700 xl:text-sm xl:font-normal xl:text-blue-600 dark:text-gray-400"
             >
               Input with Placeholder
             </label>

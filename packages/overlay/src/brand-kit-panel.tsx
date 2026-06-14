@@ -65,19 +65,23 @@ import {
   brandPresetContextKey,
   buildBrandPageBaselineDraft,
   resolveBrandPresetCategory,
-  shouldMirrorSelectionIntoDraft,
-  shouldSyncDraftFromPageInference,
 } from "./brand-preset-sync.js";
 import { fetchPagePcc } from "./pcc-api.js";
 import { listVisibleBrandBulkTargets } from "./brand-bulk-page.js";
 import { useSpaPathname } from "./spa-pathname.js";
 import {
-  isBrandBulkCategoryLocked,
-  isBrandBulkCategoryValidationReady,
-  isBrandBulkValidateDisabled,
   type BrandBulkAppliedByAction,
   type BrandBulkProgress,
 } from "./brand-bulk-session.js";
+import {
+  applyBrandButtonTitle,
+  formatApplyBrandSectionLead,
+  isApplyBrandEnabled,
+  isValidateBrandEnabled,
+  shouldTrackCrossPageApply,
+  validateBrandButtonTitle,
+  type BrandApplySectionInput,
+} from "./brand-apply-section.js";
 import { escapeAttrSelector } from "./nuvio-dom.js";
 import {
   flattenTokensAtBreakpoint,
@@ -89,6 +93,7 @@ import {
   captureBrandSaved,
   captureBrandStyleFailed,
   captureBrandStylePreviewed,
+  captureBrandCrossPageApplyStarted,
 } from "./brand-kit-telemetry.js";
 
 const PREVIEW_COLORS: Record<
@@ -193,6 +198,9 @@ export type BrandKitPanelProps = {
     targets: Array<{ hostId: string; ops: PatchOp[] }>,
     summaryLabel: string,
   ) => void;
+  onRequestBrandBulkApply?: () => void;
+  /** Clears validate/apply session when SPA route changes. */
+  onBrandRouteChange?: () => void;
   /** Clears bulk-apply locks after a successful brand save. */
   onBrandSaved?: () => void;
   /** Clears stale bulk validate/apply when presets change after validate. */
@@ -292,6 +300,8 @@ export function BrandKitPanel({
   brandBulkValidatedAction = null,
   brandBulkValidatedConfig = null,
   onRequestBrandBulkPreview,
+  onRequestBrandBulkApply,
+  onBrandRouteChange,
   onBrandSaved,
   onBrandDraftChange,
 }: BrandKitPanelProps): ReactElement {
@@ -311,6 +321,7 @@ export function BrandKitPanel({
   const lastPresetSyncKeyRef = useRef<string | null>(null);
   const userEditedPresetsRef = useRef(false);
   const pathname = useSpaPathname();
+  const prevPathnameRef = useRef(pathname);
 
   const dirty = !brandConfigsEqual(draft, saved);
 
@@ -391,6 +402,17 @@ export function BrandKitPanel({
   }, [openedTracked]);
 
   useEffect(() => {
+    if (prevPathnameRef.current === pathname) {
+      return;
+    }
+    prevPathnameRef.current = pathname;
+    userEditedPresetsRef.current = false;
+    lastPresetSyncKeyRef.current = null;
+    setDraft(saved);
+    onBrandRouteChange?.();
+  }, [onBrandRouteChange, pathname, saved]);
+
+  useEffect(() => {
     if (manualCategory) {
       setActiveCategory(manualCategory);
       return;
@@ -412,7 +434,10 @@ export function BrandKitPanel({
     [activeCategory, manualCategory, selectionCategory],
   );
 
-  const brandKitUnlocked = manualCategory !== null || Boolean(selectedId && !selectionMissing && selectionCategory);
+  const brandKitUnlocked =
+    manualCategory !== null ||
+    Boolean(selectedId && !selectionMissing && selectionCategory) ||
+    (embeddedInTab && hasBrandableHostsOnPage);
   const nonBrandableSelection = Boolean(
     selectedId && !selectionMissing && selectedEntry && !selectionCategory && !manualCategory,
   );
@@ -428,22 +453,42 @@ export function BrandKitPanel({
   );
 
   const activeCategoryCount = bulkTargetsByAction[activeCategory]?.length ?? 0;
-  const activeCategoryLocked = isBrandBulkCategoryLocked(
-    activeCategory,
-    draft,
-    brandBulkAppliedByAction,
-  );
   const bulkValidating = brandBulkProgress?.phase === "validating";
-  const isCategoryValidateDisabled = (action: BrandApplyAction): boolean =>
-    isBrandBulkValidateDisabled(
-      action,
-      draft,
+  const bulkApplying = brandBulkProgress?.phase === "applying";
+
+  const applyBrandSectionInput: BrandApplySectionInput = useMemo(
+    () => ({
+      channelReady,
+      loadState,
+      dirty,
+      action: activeCategory,
+      targetCount: activeCategoryCount,
+      saved,
+      appliedByAction: brandBulkAppliedByAction,
+      bulkPhase: brandBulkProgress?.phase ?? null,
+      validatedAction: brandBulkValidatedAction,
+      validatedConfig: brandBulkValidatedConfig,
+      brandBulkApplyReady,
+    }),
+    [
+      activeCategory,
+      activeCategoryCount,
       brandBulkAppliedByAction,
+      brandBulkApplyReady,
+      brandBulkProgress?.phase,
       brandBulkValidatedAction,
       brandBulkValidatedConfig,
-      brandBulkApplyReady,
-      bulkValidating,
-    );
+      channelReady,
+      dirty,
+      loadState,
+      saved,
+    ],
+  );
+
+  const validateBrandEnabled = isValidateBrandEnabled(applyBrandSectionInput);
+  const applyBrandEnabled = isApplyBrandEnabled(applyBrandSectionInput);
+  const validateBrandTitle = validateBrandButtonTitle(applyBrandSectionInput);
+  const applyBrandTitle = applyBrandButtonTitle(applyBrandSectionInput);
 
   useEffect(() => {
     lastPresetSyncKeyRef.current = null;
@@ -485,32 +530,11 @@ export function BrandKitPanel({
       readBreakpoint,
       styleResyncVersion,
     );
-    const contextChanged = shouldSyncDraftFromPageInference(
-      contextKey,
-      lastPresetSyncKeyRef.current,
-    );
-    const selectionHostActive = Boolean(
-      selectedId && hostId === selectedId && selectionCategory === inferenceCategory,
-    );
     const inferred = inferBrandPresetsFromTokens(classTokens, inferenceCategory);
     const inferrableDimensions = brandPresetDimensionsForAction(inferenceCategory);
     const pageDraft = buildBrandPageBaselineDraft(saved, inferred, inferrableDimensions);
 
     setPageBaselineDraft(pageDraft);
-
-    if (contextChanged) {
-      userEditedPresetsRef.current = false;
-    }
-
-    if (
-      shouldMirrorSelectionIntoDraft(
-        selectionHostActive,
-        userEditedPresetsRef.current,
-        contextChanged,
-      )
-    ) {
-      setDraft(pageDraft);
-    }
 
     lastPresetSyncKeyRef.current = contextKey;
   }, [
@@ -549,7 +573,7 @@ export function BrandKitPanel({
       const written = await saveBrandConfig(draft);
       setSaved(written);
       setDraft(written);
-      userEditedPresetsRef.current = true;
+      userEditedPresetsRef.current = false;
       setSaveState("saved");
       captureBrandSaved();
       onBrandSaved?.();
@@ -559,8 +583,12 @@ export function BrandKitPanel({
     }
   }, [channelReady, draft, onBrandSaved]);
 
-  const onBulkApplyAction = useCallback(
-    (action: BrandApplyAction) => {
+  const runBulkValidate = useCallback(
+    (
+      action: BrandApplyAction,
+      brandConfig: BrandConfig,
+      options?: { crossPageApply?: boolean },
+    ) => {
       trackOpened();
       setApplyError(null);
       if (!channelReady) {
@@ -574,21 +602,35 @@ export function BrandKitPanel({
         setApplyError(`No ${BULK_ACTION_LABELS[action].toLowerCase()} found on this page.`);
         return;
       }
-      const opsTargets = buildBrandBulkTargetOps(action, draft, targets, indexEntries);
-      const summary = buildBrandValidateSummary(action, draft, targets.length);
-      captureBrandStylePreviewed(action, dirty);
-      onRequestBrandBulkPreview?.(action, draft, opsTargets, summary);
+      const opsTargets = buildBrandBulkTargetOps(action, brandConfig, targets, indexEntries);
+      const summary = buildBrandValidateSummary(action, brandConfig, targets.length);
+      captureBrandStylePreviewed(action, !brandConfigsEqual(brandConfig, saved));
+      if (options?.crossPageApply) {
+        captureBrandCrossPageApplyStarted(action);
+      }
+      onRequestBrandBulkPreview?.(action, brandConfig, opsTargets, summary);
     },
     [
       bulkTargetsByAction,
       channelReady,
-      dirty,
-      draft,
       indexEntries,
       onRequestBrandBulkPreview,
+      saved,
       trackOpened,
     ],
   );
+
+  const onValidateBrand = useCallback(() => {
+    const crossPageApply = shouldTrackCrossPageApply(saved, draft);
+    runBulkValidate(activeCategory, saved, { crossPageApply });
+  }, [activeCategory, draft, runBulkValidate, saved]);
+
+  const onApplyBrand = useCallback(() => {
+    if (!applyBrandEnabled) {
+      return;
+    }
+    onRequestBrandBulkApply?.();
+  }, [applyBrandEnabled, onRequestBrandBulkApply]);
 
   const dirtyLabel =
     saveState === "saving"
@@ -607,7 +649,7 @@ export function BrandKitPanel({
       {embeddedInTab && !brandKitUnlocked && !nonBrandableSelection ? (
         <p className="nuvio-brand-kit-lead">
           Select a component on the page to define or review its branding, then validate and
-          apply from the action bar.
+          apply from Apply Brand below.
         </p>
       ) : null}
       {loadState === "loading" ? (
@@ -630,7 +672,7 @@ export function BrandKitPanel({
 
       {brandKitUnlocked ? (
         <>
-      <div className="nuvio-brand-category">
+      <div className="nuvio-brand-section nuvio-brand-category">
         <p className="nuvio-brand-field-label">Category</p>
         <div className="nuvio-brand-category-row" role="tablist" aria-label="Brand categories">
           {BRAND_APPLY_ACTIONS.map((action) => {
@@ -659,6 +701,8 @@ export function BrandKitPanel({
         </div>
       </div>
 
+      <div className="nuvio-brand-section nuvio-brand-define">
+        <p className="nuvio-brand-field-label">Define Brand</p>
       <div className="nuvio-brand-presets">
         {presetDimensions.includes("surface") ? (
           <PresetChipGroup<BrandSurface>
@@ -784,18 +828,13 @@ export function BrandKitPanel({
           {dirtyLabel}
         </span>
       </div>
+      </div>
 
-      <div className="nuvio-brand-bulk">
-        <p className="nuvio-brand-field-label">Validate on page</p>
-        <p className="nuvio-brand-bulk-lead">
-          Validate all {BULK_ACTION_LABELS[activeCategory].toLowerCase()} on this page, then apply
-          from the action bar below.
+      <div className="nuvio-brand-section nuvio-brand-apply">
+        <p className="nuvio-brand-field-label">Apply Brand</p>
+        <p className="nuvio-brand-apply-lead">
+          {formatApplyBrandSectionLead(activeCategory, activeCategoryCount)}
         </p>
-        {dirty ? (
-          <p className="nuvio-brand-apply-note">
-            Unsaved changes — bulk validate uses the current draft values.
-          </p>
-        ) : null}
         {brandBulkProgress?.phase === "validating" ? (
           <p className="nuvio-text-2xs nuvio-text-muted">
             Validating {Math.min(brandBulkProgress.current + 1, brandBulkProgress.total)} of{" "}
@@ -815,65 +854,26 @@ export function BrandKitPanel({
             Applying {brandBulkProgress.current + 1} of {brandBulkProgress.total}…
           </p>
         ) : null}
-        <button
-          type="button"
-          className="nuvio-button nuvio-button-primary nuvio-brand-bulk-primary"
-          disabled={
-            !channelReady ||
-            activeCategoryCount === 0 ||
-            isCategoryValidateDisabled(activeCategory)
-          }
-          title={
-            isBrandBulkCategoryValidationReady(
-              activeCategory,
-              draft,
-              brandBulkValidatedAction,
-              brandBulkValidatedConfig,
-              brandBulkApplyReady,
-            )
-              ? "Validated — use Apply to Code below, or change presets to validate again"
-              : activeCategoryLocked
-              ? "Already applied with this brand — change presets or save a new brand to validate again"
-              : activeCategoryCount === 0
-                ? `No ${BULK_ACTION_LABELS[activeCategory].toLowerCase()} on this page`
-                : undefined
-          }
-          onClick={() => onBulkApplyAction(activeCategory)}
-        >
-          Validate all {BULK_ACTION_LABELS[activeCategory].toLowerCase()} ({activeCategoryCount})
-        </button>
-        {developerDetails ? (
-          <div className="nuvio-brand-bulk-grid">
-            {BRAND_APPLY_ACTIONS.map((action) => {
-              const count = bulkTargetsByAction[action]?.length ?? 0;
-              const validateDisabled = isCategoryValidateDisabled(action);
-              return (
-                <button
-                  key={action}
-                  type="button"
-                  className="nuvio-brand-bulk-btn"
-                  disabled={!channelReady || count === 0 || validateDisabled}
-                  title={
-                    isBrandBulkCategoryValidationReady(
-                      action,
-                      draft,
-                      brandBulkValidatedAction,
-                      brandBulkValidatedConfig,
-                      brandBulkApplyReady,
-                    )
-                      ? "Validated — use Apply to Code below, or change presets to validate again"
-                      : isBrandBulkCategoryLocked(action, draft, brandBulkAppliedByAction)
-                        ? "Already applied with this brand — change presets or save a new brand to validate again"
-                        : undefined
-                  }
-                  onClick={() => onBulkApplyAction(action)}
-                >
-                  Validate all {BULK_ACTION_LABELS[action].toLowerCase()} ({count})
-                </button>
-              );
-            })}
-          </div>
-        ) : null}
+        <div className="nuvio-brand-apply-grid">
+          <button
+            type="button"
+            className="nuvio-button nuvio-button-primary nuvio-brand-apply-btn"
+            disabled={!validateBrandEnabled}
+            title={validateBrandTitle}
+            onClick={onValidateBrand}
+          >
+            {bulkValidating ? "Validating…" : "Validate"}
+          </button>
+          <button
+            type="button"
+            className="nuvio-button nuvio-button-primary nuvio-brand-apply-btn"
+            disabled={!applyBrandEnabled}
+            title={applyBrandTitle}
+            onClick={onApplyBrand}
+          >
+            {bulkApplying ? "Applying…" : "Apply"}
+          </button>
+        </div>
         {applyError ? <p className="nuvio-text-2xs nuvio-text-error">{applyError}</p> : null}
       </div>
         </>

@@ -6,13 +6,34 @@ categories:
     required: true
     hosts:
       - forms.default.card
+      - forms.select.card
+      - forms.textarea.card
+      - forms.states.card
+      - forms.inputGroup.card
+      - forms.fileInput.card
       - forms.checkbox.card
+      - forms.radio.card
+      - forms.toggle.card
+      - forms.dropzone.card
   heading:
     required: true
     hosts:
       - form.page.title
       - forms.default.title
+      - forms.select.title
+      - forms.textarea.title
+      - forms.states.title
+      - forms.inputGroup.title
+      - forms.fileInput.title
       - forms.checkbox.title
+      - forms.radio.title
+      - forms.toggle.title
+      - forms.dropzone.title
+  text:
+    required: false
+    hosts:
+      - forms.states.desc
+      - forms.dropzone.hint
   form:
     required: true
     hosts:

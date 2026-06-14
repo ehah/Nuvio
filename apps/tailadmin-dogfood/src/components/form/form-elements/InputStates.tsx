@@ -1,20 +1,16 @@
 import { useState } from "react";
-import ComponentCard from "../../common/ComponentCard";
 import Input from "../input/InputField";
 import Label from "../Label";
 export default function InputStates() {
   const [email, setEmail] = useState("");
   const [emailTwo, setEmailTwo] = useState("");
   const [error, setError] = useState(false);
-
-  // Simulate a validation check
   const validateEmail = (value: string) => {
     const isValidEmail =
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value);
     setError(!isValidEmail);
     return isValidEmail;
   };
-
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmail(value);
@@ -26,48 +22,61 @@ export default function InputStates() {
     validateEmail(value);
   };
   return (
-    <ComponentCard
-      title="Input States"
-      desc="Validation styles for error, success and disabled states on form controls."
+    <div
+      data-nuvio-id="forms.states.card"
+      className="rounded-2xl border border-gray-200 bg-white xl:bg-white xl:border xl:border-gray-200 xl:rounded-md xl:p-6 xl:shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
     >
-      <div className="space-y-5 sm:space-y-6">
-        {/* Error Input */}
-        <div>
-          <Label>Email</Label>
-          <Input
-            type="email"
-            value={email}
-            error={error}
-            onChange={handleEmailChange}
-            placeholder="Enter your email"
-            hint={error ? "This is an invalid email address." : ""}
-          />
-        </div>
-
-        {/* Success Input */}
-        <div>
-          <Label>Email</Label>
-          <Input
-            type="email"
-            value={emailTwo}
-            success={!error}
-            onChange={handleEmailTwoChange}
-            placeholder="Enter your email"
-            hint={!error ? "This is an success message." : ""}
-          />
-        </div>
-
-        {/* Disabled Input */}
-        <div>
-          <Label>Email</Label>
-          <Input
-            type="text"
-            value="disabled@example.com"
-            disabled={true}
-            placeholder="Disabled email"
-          />
+      <div className="px-6 py-5">
+        <h3
+          data-nuvio-id="forms.states.title"
+          className="text-base font-medium text-gray-800 xl:text-base xl:font-medium xl:text-green-600 dark:text-white/90"
+        >
+          Input States
+        </h3>
+        <p
+          data-nuvio-id="forms.states.desc"
+          className="mt-1 text-sm text-gray-500 dark:text-gray-400"
+        >
+          Validation styles for error, success and disabled states on form
+          controls.
+        </p>
+      </div>
+      <div className="p-4 border-t border-gray-100 dark:border-gray-800 sm:p-6">
+        <div className="space-y-5 sm:space-y-6">
+          <div>
+            <Label data-nuvio-id="forms.states.label">Email</Label>
+            <Input
+              type="email"
+              value={email}
+              error={error}
+              onChange={handleEmailChange}
+              placeholder="Enter your email"
+              hint={error ? "This is an invalid email address." : ""}
+              data-nuvio-id="forms.states.input"
+            />
+          </div>
+          <div>
+            <Label>Email</Label>
+            <Input
+              type="email"
+              value={emailTwo}
+              success={!error}
+              onChange={handleEmailTwoChange}
+              placeholder="Enter your email"
+              hint={!error ? "This is an success message." : ""}
+            />
+          </div>
+          <div>
+            <Label>Email</Label>
+            <Input
+              type="text"
+              value="disabled@example.com"
+              disabled={true}
+              placeholder="Disabled email"
+            />
+          </div>
         </div>
       </div>
-    </ComponentCard>
+    </div>
   );
 }

@@ -20,6 +20,7 @@ export type OverlayTelemetryEvent =
   | "brand_bulk_validated"
   | "brand_bulk_applied"
   | "brand_page_previewed"
+  | "brand_cross_page_apply_started"
   | "brand_style_failed";
 
 export type TagElementFailureReason =

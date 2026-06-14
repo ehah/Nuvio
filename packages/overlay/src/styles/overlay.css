@@ -762,6 +762,30 @@
   line-height: 1.2;
 }
 
+.nuvio-brand-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nuvio-brand-section:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.nuvio-brand-apply-lead {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--nuvio-dim);
+}
+
+.nuvio-brand-apply-grid .nuvio-brand-apply-btn {
+  width: 100%;
+}
+
 .nuvio-brand-save-bar {
   display: flex;
   flex-direction: column;
@@ -824,6 +848,25 @@
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
   color: var(--nuvio-text);
+}
+
+.nuvio-brand-apply-on-page {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nuvio-brand-apply-on-page-lead {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--nuvio-dim);
+}
+
+.nuvio-brand-apply-on-page-btn {
+  align-self: flex-start;
 }
 
 .nuvio-brand-bulk {

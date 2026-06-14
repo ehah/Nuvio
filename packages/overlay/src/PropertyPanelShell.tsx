@@ -162,6 +162,7 @@ export type PropertyPanelShellProps = {
   onRequestBrandBulkApply: () => void;
   onBrandSaved: () => void;
   onBrandDraftChange: (draft: BrandConfig) => void;
+  onBrandRouteChange?: () => void;
   onRequestApply: (ops: PatchOp[], patchHostId: string) => void;
   onRequestUndo: () => void;
   onCancelPreview: () => void;
@@ -372,6 +373,7 @@ export function PropertyPanelShell({
   onRequestBrandBulkApply,
   onBrandSaved,
   onBrandDraftChange,
+  onBrandRouteChange,
   onRequestApply,
   onRequestUndo,
   onCancelPreview,
@@ -1452,38 +1454,13 @@ export function PropertyPanelShell({
               brandBulkValidatedAction={brandBulkValidatedAction}
               brandBulkValidatedConfig={brandBulkValidatedConfig}
               onRequestBrandBulkPreview={onRequestBrandBulkPreview}
+              onRequestBrandBulkApply={onRequestBrandBulkApply}
+              onBrandRouteChange={onBrandRouteChange}
               onBrandSaved={onBrandSaved}
               onBrandDraftChange={onBrandDraftChange}
             />
             {brandPreviewClearedNotice ? (
               <p className="nuvio-text-2xs nuvio-text-warn">{brandPreviewClearedNotice}</p>
-            ) : null}
-            {developerDetails && brandBulkApplyReady ? (
-              <div className="nuvio-row-wrap nuvio-pt-2">
-                <button
-                  type="button"
-                  disabled={applyDisabled}
-                  className="nuvio-button nuvio-button-primary"
-                  onClick={() => onRequestBrandBulkApply()}
-                >
-                  {applyButtonLabel}
-                </button>
-                <button
-                  type="button"
-                  disabled={!channelReady || undoStackDepth <= 0}
-                  className="nuvio-button nuvio-button-ghost"
-                  onClick={() => onRequestUndo()}
-                >
-                  Undo
-                </button>
-                <button
-                  type="button"
-                  className="nuvio-button nuvio-button-ghost"
-                  onClick={() => onCancelPreview()}
-                >
-                  Cancel
-                </button>
-              </div>
             ) : null}
           </>
         ) : (
@@ -2288,9 +2265,7 @@ export function PropertyPanelShell({
           />
         ) : null}
 
-        {simpleMode &&
-        ((editorTab === "brand" && brandBulkApplyReady) ||
-          (editorTab !== "brand" && selectedId && !missing)) ? (
+        {simpleMode && editorTab !== "brand" && selectedId && !missing ? (
           <SimpleModeActionBar
             previewLabel={previewButtonLabel}
             applyLabel={applyButtonLabel}

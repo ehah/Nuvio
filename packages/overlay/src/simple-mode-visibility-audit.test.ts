@@ -90,6 +90,8 @@ describe("Simple Mode visibility audit (Rule 0)", () => {
       expect(pattern.test(jsxText), `brand-kit-panel matched ${pattern}`).toBe(false);
     }
     expect(panel).toContain("Save Brand");
+    expect(panel).toContain("Apply Brand");
+    expect(panel).toContain("Validate");
   });
 
   it("PropertyPanelShell defaults to Brand Kit when edit mode turns on", () => {
@@ -105,8 +107,8 @@ describe("Simple Mode visibility audit (Rule 0)", () => {
       .map((match) => match[1]!.trim())
       .filter(Boolean)
       .join("\n");
-    expect(jsxText).toContain("Validate all");
-    expect(jsxText).toContain("Apply to Code");
+    expect(jsxText).toContain("Validate");
+    expect(jsxText).toContain("Apply Brand");
     expect(jsxText).not.toMatch(/dryRun|mergeTailwind/);
   });
 });

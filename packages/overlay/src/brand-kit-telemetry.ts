@@ -74,6 +74,10 @@ export function captureBrandPagePreviewed(
   captureBrandEvent("brand_page_previewed", { action });
 }
 
+export function captureBrandCrossPageApplyStarted(action: BrandTelemetryAction): void {
+  captureBrandEvent("brand_cross_page_apply_started", { action });
+}
+
 export function captureBrandStyleFailed(errorCode: BrandStyleFailureReason): void {
   captureBrandEvent("brand_style_failed", { errorCode });
 }

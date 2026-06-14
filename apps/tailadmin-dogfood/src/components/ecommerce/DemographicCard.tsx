@@ -13,19 +13,19 @@ export default function DemographicCard() {
   }
   return (
     <div
-      className="bg-white border border-rose-300 rounded-md p-6 sm:p-6 xl:shadow-sm xl:border-gray-200 xl:bg-white xl:border-0 xl:rounded-md xl:p-6 dark:border-gray-800 dark:bg-white/[0.03] hover:border-rose-400 hover:border-rose-400 hover:border-blue-400"
+      className="bg-white border border-rose-300 rounded-md p-6 sm:p-6 xl:bg-white xl:border xl:border-gray-200 xl:rounded-md xl:p-6 xl:shadow-sm dark:border-gray-800 dark:bg-white/[0.03] hover:border-rose-400 hover:border-rose-400 hover:border-blue-400"
       data-nuvio-id="demo.card"
     >
       <div className="flex justify-between">
         <div>
           <h3
-            className="text-lg font-semibold text-rose-600 xl:text-lg xl:font-semibold xl:text-rose-600 dark:text-white/90"
+            className="text-lg font-semibold text-rose-600 xl:text-base xl:font-medium xl:text-green-600 dark:text-white/90"
             data-nuvio-id="demo.title"
           >
             Customers Demographic 1001
           </h3>
           <p
-            className="mt-1 text-sm font-normal text-gray-600 xl:text-sm xl:font-normal xl:text-purple-600 dark:text-gray-400"
+            className="mt-1 text-sm font-normal text-gray-600 xl:text-sm xl:font-normal xl:text-gray-700 dark:text-gray-400"
             data-nuvio-id="demo.subtitle"
           >
             Number of customer based on country

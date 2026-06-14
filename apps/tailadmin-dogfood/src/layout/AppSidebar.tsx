@@ -292,21 +292,21 @@ const AppSidebar: React.FC = () => {
                       {subItem.path === "/" ? (
                         <span
                           data-nuvio-id="nav.dashboard"
-                          className="inline-block xl:text-sm xl:font-normal xl:text-gray-600"
+                          className="inline-block xl:text-sm xl:font-normal xl:text-blue-600"
                         >
                           {subItem.name}
                         </span>
                       ) : subItem.path === "/form-elements" ? (
                         <span
                           data-nuvio-id="nav.form-elements"
-                          className="inline-block xl:text-sm xl:font-normal xl:text-gray-600"
+                          className="inline-block xl:text-sm xl:font-normal xl:text-blue-600"
                         >
                           {subItem.name}
                         </span>
                       ) : subItem.path === "/basic-tables" ? (
                         <span
                           data-nuvio-id="nav.basic-tables"
-                          className="inline-block xl:text-sm xl:font-normal xl:text-gray-600"
+                          className="inline-block xl:text-sm xl:font-normal xl:text-blue-600"
                         >
                           {subItem.name}
                         </span>

@@ -66,13 +66,13 @@ export default function RecentOrders() {
   return (
     <div
       data-nuvio-id="orders.card"
-      className="overflow-hidden bg-white border border-rose-300 rounded-md p-6 sm:px-6 xl:shadow-sm xl:border-gray-200 xl:bg-white xl:border-0 xl:rounded-md xl:p-6 dark:border-gray-800 dark:bg-white/[0.03] hover:border-rose-400 hover:border-rose-400 hover:border-blue-400"
+      className="overflow-hidden bg-white border border-rose-300 rounded-md p-6 sm:px-6 xl:bg-white xl:border xl:border-gray-200 xl:rounded-md xl:p-6 xl:shadow-sm dark:border-gray-800 dark:bg-white/[0.03] hover:border-rose-400 hover:border-rose-400 hover:border-blue-400"
     >
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3
             data-nuvio-id="orders.title"
-            className="text-lg font-semibold text-rose-600 xl:text-lg xl:font-semibold xl:text-rose-600 dark:text-white/90"
+            className="text-lg font-semibold text-rose-600 xl:text-base xl:font-medium xl:text-green-600 dark:text-white/90"
           >
             Recent Orders
           </h3>
@@ -82,14 +82,14 @@ export default function RecentOrders() {
           <button
             data-nuvio-id="orders.filter"
             type="button"
-            className="inline-flex items-center gap-2 font-medium shadow-theme-xs bg-rose-600 text-white rounded-md px-4 py-2 xl:bg-rose-600 xl:text-white xl:rounded-md xl:px-4 xl:py-2 hover:bg-rose-700 dark:bg-rose-600 dark:text-white dark:hover:bg-rose-700 hover:bg-blue-700 hover:bg-rose-700"
+            className="inline-flex items-center gap-2 font-medium shadow-theme-xs bg-rose-600 text-white rounded-md px-4 py-2 xl:bg-purple-600 xl:text-white xl:rounded-md xl:px-4 xl:py-2 hover:bg-rose-700 dark:bg-rose-600 dark:text-white dark:hover:bg-rose-700 hover:bg-blue-700 hover:bg-rose-700 hover:bg-green-700 hover:bg-purple-700"
           >
             Filter Button Test
           </button>
           <button
             data-nuvio-id="orders.seeAll"
             type="button"
-            className="inline-flex items-center gap-2 font-medium shadow-theme-xs bg-rose-600 text-white rounded-md px-4 py-2 xl:bg-rose-600 xl:text-white xl:rounded-md xl:px-4 xl:py-2 hover:bg-rose-700 dark:bg-rose-600 dark:text-white dark:hover:bg-rose-700 hover:bg-blue-700 hover:bg-rose-700"
+            className="inline-flex items-center gap-2 font-medium shadow-theme-xs bg-rose-600 text-white rounded-md px-4 py-2 xl:bg-purple-600 xl:text-white xl:rounded-md xl:px-4 xl:py-2 hover:bg-rose-700 dark:bg-rose-600 dark:text-white dark:hover:bg-rose-700 hover:bg-blue-700 hover:bg-rose-700 hover:bg-green-700 hover:bg-purple-700"
           >
             See all
           </button>
@@ -97,7 +97,7 @@ export default function RecentOrders() {
       </div>
       <div
         data-nuvio-id="orders.table"
-        className="overflow-x-auto max-w-full border border-rose-300 rounded-md xl:max-w-full xl:border-0 xl:rounded-md"
+        className="overflow-x-auto max-w-full border border-rose-300 rounded-md xl:max-w-full xl:border xl:border-gray-200 xl:rounded-md"
       >
         <Table>
           <TableHeader className="border-y border-gray-100 dark:border-gray-800">

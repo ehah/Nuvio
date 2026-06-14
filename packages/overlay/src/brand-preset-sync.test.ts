@@ -4,7 +4,6 @@ import {
   brandPresetContextKey,
   buildBrandPageBaselineDraft,
   resolveBrandPresetCategory,
-  shouldMirrorSelectionIntoDraft,
   shouldSyncDraftFromPageInference,
 } from "./brand-preset-sync.js";
 
@@ -51,16 +50,11 @@ describe("shouldSyncDraftFromPageInference", () => {
   });
 });
 
-describe("shouldMirrorSelectionIntoDraft", () => {
-  it("mirrors selection while the user has not edited presets", () => {
-    expect(shouldMirrorSelectionIntoDraft(true, false, false)).toBe(true);
-  });
-
-  it("does not mirror after the user edits presets on the same host", () => {
-    expect(shouldMirrorSelectionIntoDraft(true, true, false)).toBe(false);
-  });
-
-  it("mirrors on context change even if the user edited earlier", () => {
-    expect(shouldMirrorSelectionIntoDraft(true, true, true)).toBe(true);
+describe("define-brand draft vs page baseline", () => {
+  it("keeps saved brand in draft while page baseline reflects selection inference", () => {
+    const saved = { ...DEFAULT_BRAND_CONFIG, color: "rose" };
+    const pageBaseline = buildBrandPageBaselineDraft(saved, { color: "blue" }, ["color", "radius"]);
+    expect(pageBaseline.color).toBe("blue");
+    expect(saved.color).toBe("rose");
   });
 });

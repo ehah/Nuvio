@@ -99,12 +99,12 @@ export default function MonthlySalesChart() {
   return (
     <div
       data-nuvio-id="chart.monthly.card"
-      className="overflow-hidden bg-white border border-rose-300 rounded-md p-6 sm:px-6 sm:pt-6 xl:shadow-sm xl:border-gray-200 xl:bg-white xl:border-0 xl:rounded-md xl:p-6 dark:border-gray-800 dark:bg-white/[0.03] hover:border-rose-400 hover:border-rose-400 hover:border-blue-400"
+      className="overflow-hidden bg-white border border-rose-300 rounded-md p-6 sm:px-6 sm:pt-6 xl:bg-white xl:border xl:border-gray-200 xl:rounded-md xl:p-6 xl:shadow-sm dark:border-gray-800 dark:bg-white/[0.03] hover:border-rose-400 hover:border-rose-400 hover:border-blue-400"
     >
       <div className="flex items-center justify-between">
         <h3
           data-nuvio-id="chart.monthly.title"
-          className="text-lg font-semibold text-rose-600 xl:text-lg xl:font-semibold xl:text-rose-600 dark:text-white/90"
+          className="text-lg font-semibold text-rose-600 xl:text-base xl:font-medium xl:text-green-600 dark:text-white/90"
         >
           Monthly Sales
         </h3>

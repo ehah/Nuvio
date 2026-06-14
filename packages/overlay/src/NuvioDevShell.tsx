@@ -546,6 +546,14 @@ export function NuvioDevShellInner(): ReactElement {
     setBrandPagePreviewActive(false);
   }, []);
 
+  const onBrandRouteChange = useCallback(() => {
+    revertBrandPagePreview();
+    clearBrandBulkSession();
+    setBrandBulkAppliedByAction({});
+    setBrandPreviewSummary(null);
+    setPreviewSummary(null);
+  }, [clearBrandBulkSession, revertBrandPagePreview]);
+
   const runNextBulkPreview = useCallback(() => {
     const session = brandBulkSessionRef.current;
     if (!session || session.mode !== "preview") {
@@ -1302,6 +1310,7 @@ export function NuvioDevShellInner(): ReactElement {
             setPreviewSummary(null);
           }}
           onBrandDraftChange={onBrandDraftChange}
+          onBrandRouteChange={onBrandRouteChange}
           onRequestApply={onRequestApply}
           onRequestUndo={onRequestUndo}
           onCancelPreview={onCancelPreview}
