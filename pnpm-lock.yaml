@@ -428,7 +428,7 @@ importers:
         specifier: ^5.7.3
         version: 5.7.3
       vitest:
-        specifier: ^3.0.6
+        specifier: ^3.2.4
         version: 3.2.4(@types/node@22.19.18)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(yaml@2.9.0)
 
   packages/next:
@@ -437,24 +437,39 @@ importers:
         specifier: workspace:*
         version: link:../vite-plugin
     devDependencies:
+      '@nuvio/overlay':
+        specifier: workspace:*
+        version: link:../overlay
       '@types/node':
         specifier: ^22.13.5
         version: 22.19.18
       next:
         specifier: ^15.2.0
         version: 15.5.19(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.6
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.6(react@19.2.6)
       tsup:
         specifier: ^8.4.0
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.14)(typescript@5.7.3)(yaml@2.9.0)
       typescript:
         specifier: ^5.7.3
         version: 5.7.3
+      vitest:
+        specifier: ^3.0.6
+        version: 3.2.4(@types/node@22.19.18)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(yaml@2.9.0)
 
   packages/overlay:
     dependencies:
       '@nuvio/shared':
         specifier: workspace:*
         version: link:../shared
+      next:
+        specifier: '>=14.0.0'
+        version: 15.5.19(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       posthog-js:
         specifier: ^1.380.1
         version: 1.380.1
@@ -514,10 +529,16 @@ importers:
 
   packages/vite-plugin:
     dependencies:
+      '@babel/generator':
+        specifier: ^7.26.9
+        version: 7.29.1
       '@babel/parser':
         specifier: ^7.26.9
         version: 7.29.3
       '@babel/traverse':
+        specifier: ^7.26.9
+        version: 7.29.0
+      '@babel/types':
         specifier: ^7.26.9
         version: 7.29.0
       '@nuvio/ast-engine':
@@ -533,9 +554,6 @@ importers:
         specifier: ^8.18.0
         version: 8.20.0
     devDependencies:
-      '@babel/types':
-        specifier: ^7.26.9
-        version: 7.29.0
       '@types/babel__traverse':
         specifier: ^7.20.7
         version: 7.28.0

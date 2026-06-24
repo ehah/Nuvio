@@ -82,14 +82,14 @@ export default function RecentOrders() {
           <button
             data-nuvio-id="orders.filter"
             type="button"
-            className="inline-flex items-center gap-2 font-medium shadow-theme-xs bg-green-600 text-white rounded-md px-4 py-2 xl:bg-blue-600 xl:text-white xl:rounded-md xl:px-4 xl:py-2 hover:bg-rose-700 dark:bg-rose-600 dark:text-white dark:hover:bg-rose-700 hover:bg-blue-700 hover:bg-rose-700 hover:bg-green-700 hover:bg-purple-700 hover:bg-purple-700 hover:bg-blue-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700"
+            className="inline-flex items-center gap-2 font-medium shadow-theme-xs bg-green-600 text-white rounded-md px-4 py-2 xl:bg-blue-600 xl:text-white xl:rounded-md xl:px-4 xl:py-2 hover:bg-rose-700 dark:bg-rose-600 dark:text-white dark:hover:bg-rose-700 hover:bg-blue-700 hover:bg-rose-700 hover:bg-green-700 hover:bg-purple-700 hover:bg-purple-700 hover:bg-blue-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700"
           >
             Filter Button Test
           </button>
           <button
             data-nuvio-id="orders.seeAll"
             type="button"
-            className="inline-flex items-center gap-2 font-medium shadow-theme-xs bg-green-600 text-white rounded-md px-4 py-2 xl:bg-blue-600 xl:text-white xl:rounded-md xl:px-4 xl:py-2 hover:bg-rose-700 dark:bg-rose-600 dark:text-white dark:hover:bg-rose-700 hover:bg-blue-700 hover:bg-rose-700 hover:bg-green-700 hover:bg-purple-700 hover:bg-purple-700 hover:bg-blue-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700"
+            className="inline-flex items-center gap-2 font-medium shadow-theme-xs bg-green-600 text-white rounded-md px-4 py-2 xl:bg-blue-600 xl:text-white xl:rounded-md xl:px-4 xl:py-2 hover:bg-rose-700 dark:bg-rose-600 dark:text-white dark:hover:bg-rose-700 hover:bg-blue-700 hover:bg-rose-700 hover:bg-green-700 hover:bg-purple-700 hover:bg-purple-700 hover:bg-blue-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700 hover:bg-green-700"
           >
             See all
           </button>

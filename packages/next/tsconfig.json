@@ -4,7 +4,8 @@
     "rootDir": "src",
     "noEmit": true,
     "paths": {
-      "@nuvio/vite-plugin/dev-session": ["../vite-plugin/dist/nuvio-dev-session.d.ts"]
+      "@nuvio/vite-plugin/dev-session": ["../vite-plugin/dist/nuvio-dev-session.d.ts"],
+      "@nuvio/vite-plugin/scan": ["../vite-plugin/dist/scan.d.ts"]
     }
   },
   "include": ["src/**/*.ts"]

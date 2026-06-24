@@ -152,8 +152,24 @@ function assignRef<T extends HTMLElement>(
   (ref as MutableRefObject<T | null>).current = el;
 }
 
-export function NuvioDevShellInner(): ReactElement {
-  const shadowMount = useNuvioShadowMount();
+export type NuvioDevShellChromeMount = "shadow" | "light";
+
+export type NuvioDevShellInnerProps = {
+  /**
+   * Vite uses shadow DOM so overlay CSS stays isolated from host Tailwind.
+   * Next.js bundles `overlay.css` via webpack — use light DOM so styles apply.
+   */
+  chromeMount?: NuvioDevShellChromeMount;
+  /** Next App Router pathname for Brand Kit cross-page PCC resolution. */
+  routePathname?: string;
+};
+
+export function NuvioDevShellInner({
+  chromeMount = "shadow",
+  routePathname,
+}: NuvioDevShellInnerProps = {}): ReactElement {
+  const useShadowChrome = chromeMount === "shadow";
+  const shadowMount = useNuvioShadowMount(useShadowChrome);
   const panelRef = useRef<HTMLElement>(null);
   const chipRef = useRef<HTMLDivElement>(null);
   const shadowHostRef = useRef<HTMLElement | null>(null);
@@ -167,15 +183,14 @@ export function NuvioDevShellInner(): ReactElement {
   const wsRef = useRef<WebSocket | null>(null);
   const connectGenRef = useRef(0);
 
-  const [chromeLayout, setChromeLayout] = useState<OverlayChromePersist>(loadOverlayChromePersist);
-  const [chipPos, setChipPos] = useState<Point | null>(() =>
-    cornerAnchorPosition(
-      loadOverlayChromePersist().chip.corner,
-      220,
-      120,
-      OVERLAY_CHROME_MARGIN,
-    ),
-  );
+  // Defaults on first paint so SSR/hydration match; persisted layout loads after mount.
+  const [chromeLayout, setChromeLayout] =
+    useState<OverlayChromePersist>(DEFAULT_OVERLAY_CHROME);
+  const [chipPos, setChipPos] = useState<Point | null>(null);
+
+  useEffect(() => {
+    setChromeLayout(loadOverlayChromePersist());
+  }, []);
 
   const patchChrome = useCallback(
     (patch: { panel?: Partial<OverlayChromePersist["panel"]>; chip?: Partial<OverlayChromePersist["chip"]> }) => {
@@ -348,7 +363,11 @@ export function NuvioDevShellInner(): ReactElement {
   const [indexEntries, setIndexEntries] = useState<readonly IndexWireEntry[]>([]);
   const [duplicateErrors, setDuplicateErrors] = useState<DuplicateIdError[]>([]);
   const [runtimeDiagnostics, setRuntimeDiagnostics] = useState<RuntimeDiagnostics | null>(null);
-  const [developerDetails, setDeveloperDetails] = useState(() => loadDeveloperDetails());
+  const [developerDetails, setDeveloperDetails] = useState(false);
+
+  useEffect(() => {
+    setDeveloperDetails(loadDeveloperDetails());
+  }, []);
 
   const onDeveloperDetailsChange = useCallback((enabled: boolean) => {
     setDeveloperDetails(enabled);
@@ -1310,6 +1329,7 @@ export function NuvioDevShellInner(): ReactElement {
             setPreviewSummary(null);
           }}
           onBrandDraftChange={onBrandDraftChange}
+          routePathname={routePathname}
           onBrandRouteChange={onBrandRouteChange}
           onRequestApply={onRequestApply}
           onRequestUndo={onRequestUndo}
@@ -1346,9 +1366,12 @@ export function NuvioDevShellInner(): ReactElement {
             ? { left: chipPos.x, top: chipPos.y, right: "auto", bottom: "auto" }
             : {}),
         }}
-        className={`${NUVO_ROOT} nuvio-chip ${NUVO_GLASS_SHELL} ${chromeLayout.chip.collapsed ? "nuvio-chip--collapsed" : ""} ${
+        className={`${NUVO_ROOT} nuvio-chip ${NUVO_GLASS_SHELL} nuvio-chip--anchor-${chromeLayout.chip.corner} ${
+          chipPos ? "nuvio-chip--positioned" : ""
+        } ${chromeLayout.chip.collapsed ? "nuvio-chip--collapsed" : ""} ${
           chipDragging ? "nuvio-chip--dragging" : ""
         }`}
+        suppressHydrationWarning
       >
         <div className={NUVO_GLASS_CONTENT}>
           <div
@@ -1427,7 +1450,11 @@ export function NuvioDevShellInner(): ReactElement {
         hoverTextTargetKey={hoverTextTargetKey}
         suppressTextTargetHints={!developerDetails}
       />
-      {shadowMount ? createPortal(chromeUi, shadowMount.mount) : chromeUi}
+      {useShadowChrome
+        ? shadowMount
+          ? createPortal(chromeUi, shadowMount.mount)
+          : null
+        : chromeUi}
     </>
   );
 }

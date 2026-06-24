@@ -1,0 +1,17 @@
+page: badges
+route: /badges
+description: Next.js dogfood badges page
+categories:
+  badge:
+    required: true
+    hosts:
+      - badges.demo.primary
+      - badges.demo.success
+  heading:
+    required: true
+    hosts:
+      - badges.page.title
+  card:
+    required: true
+    hosts:
+      - badges.light.card

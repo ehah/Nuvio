@@ -11,6 +11,7 @@ import {
   expandTemplateNuvioIds,
   extractRowKeysFromTableDataConst,
 } from "./source-index-template-ids.js";
+import { NUVIO_DEFAULT_IGNORE_GLOBS } from "./scan-globs.js";
 
 function getTraverseFn(): (ast: import("@babel/types").File, visitor: object) => void {
   if (typeof traverseImport === "function") {
@@ -146,7 +147,7 @@ export function buildSourceIndex(
   });
   const matched = fg.sync(normalizedPatterns, {
     absolute: true,
-    ignore: ["**/node_modules/**", "**/dist/**"],
+    ignore: [...NUVIO_DEFAULT_IGNORE_GLOBS],
     onlyFiles: true,
   });
   const files = [...new Set(matched)];

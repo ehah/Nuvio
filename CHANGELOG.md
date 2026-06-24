@@ -6,7 +6,23 @@ All notable changes to `@nuvio/*` packages are documented here. This project fol
 
 ## [Unreleased]
 
-_No changes yet._
+### Added — v2.0 (Next.js + monorepo)
+
+- **Next.js support** — App Router and Pages Router via `@nuvio/next`: `withNuvio()`, custom dev server (`createNuvioNextDevServer`), `NuvioNextShell` (`@nuvio/overlay/next`).
+- **Monorepo CLI** — `discoverFrontendApps`, `--app`, `--all-apps` for `init`, `doctor`, `scan`, `stats`, `brand`, `coverage verify`.
+- **Framework adapters** — Vite (existing) and Next init/doctor/verify paths in `@nuvio/cli`.
+- **Brand Kit on Next** — shared `/__nuvio/brand` and `/__nuvio/pcc` HTTP on Next dev server.
+- **Docs** — `docs/mds/NEXT.md`, `MONOREPO.md`, `COMPATIBILITY.md`, `LIMITATIONS.md`.
+
+### Changed
+
+- `@nuvio/vite-plugin` — jsx-loc runtime deps (`@babel/generator`, `@babel/types`); shared dev-session and config HTTP exports.
+- `@nuvio/overlay` — SSR-safe chip positioning; overlay chrome mounts in shadow root only.
+
+### Fixed
+
+- Next `next.config` CJS `require` via `@nuvio/next/with-nuvio` dual ESM/CJS build.
+- Hydration mismatch on Nuvio chip in Next App Router layouts.
 
 ## [1.1.0] — 2026-06-14
 

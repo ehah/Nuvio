@@ -1,6 +1,5 @@
 import { resolve } from "node:path";
-import { PreflightError } from "./detect-project.js";
-import { scanProject } from "./project-scan.js";
+import type { DuplicateIdError, IndexWireEntry } from "@nuvio/shared";
 import {
   evaluatePageCoverage,
   pccCategoryLabel,
@@ -11,9 +10,15 @@ import {
   loadPccManifestFromFile,
   resolvePccManifestPath,
 } from "@nuvio/shared/load-pcc-manifest";
+import type { AppContext } from "./app-context.js";
+import {
+  handlePreflightError,
+  resolveCommandApps,
+  scanForApp,
+  type AppScopedCommandOptions,
+} from "./app-command.js";
 
-export type CoverageVerifyOptions = {
-  cwd: string;
+export type CoverageVerifyOptions = AppScopedCommandOptions & {
   page?: string;
   manifest?: string;
   all?: boolean;
@@ -99,8 +104,8 @@ function printAllHumanReport(summary: CoverageVerifyAllResult): void {
 
 function verifyLoadedManifest(
   manifestPath: string,
-  entries: ReturnType<typeof scanProject>["index"]["entries"],
-  duplicateErrors: ReturnType<typeof scanProject>["index"]["duplicateErrors"],
+  entries: readonly IndexWireEntry[],
+  duplicateErrors: readonly DuplicateIdError[],
 ):
   | { ok: true; result: CoverageEvaluationResult }
   | { ok: false; code: number; message: string } {
@@ -116,30 +121,21 @@ function verifyLoadedManifest(
   return { ok: true, result };
 }
 
-export function runCoverageVerifyAll(opts: CoverageVerifyOptions): number {
-  const manifestPaths = listPccManifestFiles(opts.cwd);
+function runCoverageVerifyAllForApp(app: AppContext, opts: CoverageVerifyOptions): number {
+  const manifestPaths = listPccManifestFiles(app.appRoot);
   if (manifestPaths.length === 0) {
-    console.error(`No PCC manifests found under ${resolve(opts.cwd)}/nuvio/pages`);
+    console.error(`No PCC manifests found under ${resolve(app.appRoot)}/nuvio/pages`);
     return 2;
   }
 
-  let scan;
-  try {
-    scan = scanProject(opts.cwd);
-  } catch (e) {
-    if (e instanceof PreflightError) {
-      console.error(e.message);
-      return 3;
-    }
-    throw e;
-  }
+  const { index } = scanForApp(app);
 
   const pages: CoverageVerifyAllResult["pages"] = [];
   for (const manifestPath of manifestPaths) {
     const verified = verifyLoadedManifest(
       manifestPath,
-      scan.index.entries,
-      scan.index.duplicateErrors,
+      index.entries,
+      index.duplicateErrors,
     );
     if (!verified.ok) {
       console.error(verified.message);
@@ -154,7 +150,7 @@ export function runCoverageVerifyAll(opts: CoverageVerifyOptions): number {
   };
 
   if (opts.json) {
-    console.log(JSON.stringify(summary, null, 2));
+    console.log(JSON.stringify({ appId: app.appId, ...summary }, null, 2));
     return summary.pass ? 0 : 1;
   }
 
@@ -162,36 +158,27 @@ export function runCoverageVerifyAll(opts: CoverageVerifyOptions): number {
   return summary.pass ? 0 : 1;
 }
 
-export function runCoverageVerify(opts: CoverageVerifyOptions): number {
+function runCoverageVerifyForApp(app: AppContext, opts: CoverageVerifyOptions): number {
   if (opts.all) {
-    return runCoverageVerifyAll(opts);
+    return runCoverageVerifyAllForApp(app, opts);
   }
 
   let manifestPath: string;
   try {
     manifestPath = resolve(
-      resolvePccManifestPath(opts.cwd, { page: opts.page, manifest: opts.manifest }),
+      resolvePccManifestPath(app.appRoot, { page: opts.page, manifest: opts.manifest }),
     );
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
     return 2;
   }
 
-  let scan;
-  try {
-    scan = scanProject(opts.cwd);
-  } catch (e) {
-    if (e instanceof PreflightError) {
-      console.error(e.message);
-      return 3;
-    }
-    throw e;
-  }
+  const { index } = scanForApp(app);
 
   const verified = verifyLoadedManifest(
     manifestPath,
-    scan.index.entries,
-    scan.index.duplicateErrors,
+    index.entries,
+    index.duplicateErrors,
   );
   if (!verified.ok) {
     console.error(verified.message);
@@ -202,6 +189,7 @@ export function runCoverageVerify(opts: CoverageVerifyOptions): number {
     console.log(
       JSON.stringify(
         {
+          appId: app.appId,
           manifestPath,
           ...verified.result,
         },
@@ -214,4 +202,34 @@ export function runCoverageVerify(opts: CoverageVerifyOptions): number {
 
   printHumanReport(verified.result, manifestPath);
   return verified.result.pass ? 0 : 1;
+}
+
+export function runCoverageVerifyAll(opts: CoverageVerifyOptions): number {
+  return runCoverageVerify({ ...opts, all: true });
+}
+
+export function runCoverageVerify(opts: CoverageVerifyOptions): number {
+  let apps: AppContext[];
+  try {
+    apps = resolveCommandApps(opts);
+  } catch (e) {
+    const code = handlePreflightError(e);
+    if (code !== null) {
+      return code;
+    }
+    throw e;
+  }
+
+  let exit = 0;
+  for (let i = 0; i < apps.length; i++) {
+    const app = apps[i]!;
+    if (apps.length > 1) {
+      if (i > 0) {
+        console.log("");
+      }
+      console.log(`=== ${app.appId} ===`);
+    }
+    exit = Math.max(exit, runCoverageVerifyForApp(app, opts));
+  }
+  return exit;
 }

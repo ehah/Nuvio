@@ -68,7 +68,7 @@ import {
 } from "./brand-preset-sync.js";
 import { fetchPagePcc } from "./pcc-api.js";
 import { listVisibleBrandBulkTargets } from "./brand-bulk-page.js";
-import { useSpaPathname } from "./spa-pathname.js";
+import { useOverlayPathname } from "./spa-pathname.js";
 import {
   type BrandBulkAppliedByAction,
   type BrandBulkProgress,
@@ -199,6 +199,8 @@ export type BrandKitPanelProps = {
     summaryLabel: string,
   ) => void;
   onRequestBrandBulkApply?: () => void;
+  /** Host framework route (e.g. Next `usePathname`); falls back to SPA history tracking. */
+  routePathname?: string;
   /** Clears validate/apply session when SPA route changes. */
   onBrandRouteChange?: () => void;
   /** Clears bulk-apply locks after a successful brand save. */
@@ -302,6 +304,7 @@ export function BrandKitPanel({
   onRequestBrandBulkPreview,
   onRequestBrandBulkApply,
   onBrandRouteChange,
+  routePathname,
   onBrandSaved,
   onBrandDraftChange,
 }: BrandKitPanelProps): ReactElement {
@@ -320,7 +323,7 @@ export function BrandKitPanel({
   );
   const lastPresetSyncKeyRef = useRef<string | null>(null);
   const userEditedPresetsRef = useRef(false);
-  const pathname = useSpaPathname();
+  const pathname = useOverlayPathname(routePathname);
   const prevPathnameRef = useRef(pathname);
 
   const dirty = !brandConfigsEqual(draft, saved);

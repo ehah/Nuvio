@@ -20,11 +20,15 @@ import {
   loadPccManifestFromFile,
   resolvePccManifestPath,
 } from "@nuvio/shared/load-pcc-manifest";
-import { PreflightError } from "./detect-project.js";
-import { scanProject } from "./project-scan.js";
+import type { AppContext } from "./app-context.js";
+import {
+  handlePreflightError,
+  resolveCommandApps,
+  scanForApp,
+  type AppScopedCommandOptions,
+} from "./app-command.js";
 
-export type BrandApplyOptions = {
-  cwd: string;
+export type BrandApplyOptions = AppScopedCommandOptions & {
   page?: string;
   manifest?: string;
   all?: boolean;
@@ -203,27 +207,17 @@ async function applyLoadedManifest(
   };
 }
 
-export async function runBrandApplyAll(opts: BrandApplyOptions): Promise<number> {
-  const manifestPaths = listPccManifestFiles(opts.cwd);
+async function runBrandApplyAllForApp(app: AppContext, opts: BrandApplyOptions): Promise<number> {
+  const manifestPaths = listPccManifestFiles(app.appRoot);
   if (manifestPaths.length === 0) {
-    console.error(`No PCC manifests found under ${resolve(opts.cwd)}/nuvio/pages`);
+    console.error(`No PCC manifests found under ${resolve(app.appRoot)}/nuvio/pages`);
     return 2;
   }
 
-  const brand = readProjectBrandConfig(opts.cwd);
+  const brand = readProjectBrandConfig(app.appRoot);
+  const { index } = scanForApp(app);
 
-  let scan;
-  try {
-    scan = scanProject(opts.cwd);
-  } catch (e) {
-    if (e instanceof PreflightError) {
-      console.error(e.message);
-      return 3;
-    }
-    throw e;
-  }
-
-  const duplicateIds = duplicateIdSet(scan.index.duplicateErrors);
+  const duplicateIds = duplicateIdSet(index.duplicateErrors);
   const pages: ApplyPageResult[] = [];
 
   for (const manifestPath of manifestPaths) {
@@ -236,10 +230,10 @@ export async function runBrandApplyAll(opts: BrandApplyOptions): Promise<number>
       await applyLoadedManifest(
         manifestPath,
         loaded.manifest,
-        scan.index.entries,
+        index.entries,
         duplicateIds,
         brand,
-        scan.ctx.root,
+        app.appRoot,
         opts,
       ),
     );
@@ -248,7 +242,7 @@ export async function runBrandApplyAll(opts: BrandApplyOptions): Promise<number>
   const pass = pages.every((page) => page.failed.length === 0);
 
   if (opts.json) {
-    console.log(JSON.stringify({ pass, dryRun: opts.dryRun === true, pages }, null, 2));
+    console.log(JSON.stringify({ pass, appId: app.appId, dryRun: opts.dryRun === true, pages }, null, 2));
     return pass ? 0 : 1;
   }
 
@@ -261,15 +255,15 @@ export async function runBrandApplyAll(opts: BrandApplyOptions): Promise<number>
   return pass ? 0 : 1;
 }
 
-export async function runBrandApply(opts: BrandApplyOptions): Promise<number> {
+async function runBrandApplyForApp(app: AppContext, opts: BrandApplyOptions): Promise<number> {
   if (opts.all) {
-    return runBrandApplyAll(opts);
+    return runBrandApplyAllForApp(app, opts);
   }
 
   let manifestPath: string;
   try {
     manifestPath = resolve(
-      resolvePccManifestPath(opts.cwd, { page: opts.page, manifest: opts.manifest }),
+      resolvePccManifestPath(app.appRoot, { page: opts.page, manifest: opts.manifest }),
     );
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
@@ -282,34 +276,24 @@ export async function runBrandApply(opts: BrandApplyOptions): Promise<number> {
     return 2;
   }
 
-  const brand = readProjectBrandConfig(opts.cwd);
+  const brand = readProjectBrandConfig(app.appRoot);
+  const { index } = scanForApp(app);
 
-  let scan;
-  try {
-    scan = scanProject(opts.cwd);
-  } catch (e) {
-    if (e instanceof PreflightError) {
-      console.error(e.message);
-      return 3;
-    }
-    throw e;
-  }
-
-  const duplicateIds = duplicateIdSet(scan.index.duplicateErrors);
+  const duplicateIds = duplicateIdSet(index.duplicateErrors);
   const result = await applyLoadedManifest(
     manifestPath,
     loaded.manifest,
-    scan.index.entries,
+    index.entries,
     duplicateIds,
     brand,
-    scan.ctx.root,
+    app.appRoot,
     opts,
   );
 
   const pass = result.failed.length === 0;
 
   if (opts.json) {
-    console.log(JSON.stringify({ pass, dryRun: opts.dryRun === true, ...result }, null, 2));
+    console.log(JSON.stringify({ pass, appId: app.appId, dryRun: opts.dryRun === true, ...result }, null, 2));
     return pass ? 0 : 1;
   }
 
@@ -317,4 +301,34 @@ export async function runBrandApply(opts: BrandApplyOptions): Promise<number> {
   printHumanReport(result);
   console.log(`\nResult: ${pass ? "PASS" : "FAIL"}`);
   return pass ? 0 : 1;
+}
+
+export async function runBrandApplyAll(opts: BrandApplyOptions): Promise<number> {
+  return runBrandApply({ ...opts, all: true });
+}
+
+export async function runBrandApply(opts: BrandApplyOptions): Promise<number> {
+  let apps: AppContext[];
+  try {
+    apps = resolveCommandApps(opts);
+  } catch (e) {
+    const code = handlePreflightError(e);
+    if (code !== null) {
+      return code;
+    }
+    throw e;
+  }
+
+  let exit = 0;
+  for (let i = 0; i < apps.length; i++) {
+    const app = apps[i]!;
+    if (apps.length > 1) {
+      if (i > 0) {
+        console.log("");
+      }
+      console.log(`=== ${app.appId} ===`);
+    }
+    exit = Math.max(exit, await runBrandApplyForApp(app, opts));
+  }
+  return exit;
 }

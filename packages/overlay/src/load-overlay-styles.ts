@@ -3,13 +3,15 @@ const STYLE_LINK_ID = "nuvio-overlay-styles";
 export type OverlayCssMode = "source" | "dist";
 
 export function getOverlayCssMode(): OverlayCssMode {
-  return import.meta.url.includes("/dist/") ? "dist" : "source";
+  const { url } = import.meta;
+  return url.includes("/dist/") ? "dist" : "source";
 }
 
 export function getOverlayCssHref(): string {
+  const { url } = import.meta;
   const mode = getOverlayCssMode();
   const cssFile = mode === "dist" ? "./style.css" : "./styles/overlay.css";
-  return new URL(cssFile, import.meta.url).href;
+  return new URL(cssFile, url).href;
 }
 
 /**

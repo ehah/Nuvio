@@ -196,6 +196,27 @@
   text-align: left;
 }
 
+/* Corner anchors before measured inline position (SSR-safe; avoids viewport math on server). */
+.nuvio-chip--anchor-bottom-right {
+  right: 24px;
+  bottom: 24px;
+}
+
+.nuvio-chip--anchor-bottom-left {
+  left: 24px;
+  bottom: 24px;
+}
+
+.nuvio-chip--anchor-top-right {
+  right: 24px;
+  top: 24px;
+}
+
+.nuvio-chip--anchor-top-left {
+  left: 24px;
+  top: 24px;
+}
+
 .nuvio-chip--collapsed {
   max-width: min(16rem, calc(100vw - 32px));
   padding: 7px 10px;

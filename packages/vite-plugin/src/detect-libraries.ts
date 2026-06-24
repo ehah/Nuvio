@@ -46,7 +46,12 @@ export function detectProjectLibraries(
     }
   }
 
-  for (const rel of ["components/ui", "src/components/ui"]) {
+  for (const rel of [
+    "components/ui",
+    "src/components/ui",
+    "app/components/ui",
+    "src/app/components/ui",
+  ]) {
     const uiDir = path.join(root, rel);
     if (dirHasUiComponents(uiDir)) {
       found.add("shadcn");

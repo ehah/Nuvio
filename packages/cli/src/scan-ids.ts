@@ -2,10 +2,16 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import fg from "fast-glob";
 
-const ID_GLOB = ["src/**/*.{tsx,jsx}"];
+const ID_GLOBS = [
+  "src/**/*.{tsx,jsx}",
+  "app/**/*.{tsx,jsx}",
+  "pages/**/*.{tsx,jsx}",
+  "src/app/**/*.{tsx,jsx}",
+  "src/pages/**/*.{tsx,jsx}",
+];
 
 export function projectHasPageTitleId(root: string): boolean {
-  const files = fg.sync(ID_GLOB, { cwd: root, absolute: true });
+  const files = fg.sync(ID_GLOBS, { cwd: root, absolute: true });
   for (const file of files) {
     const text = readFileSync(file, "utf8");
     if (/data-nuvio-id=["']page\.title["']/.test(text)) {
@@ -16,12 +22,20 @@ export function projectHasPageTitleId(root: string): boolean {
 }
 
 export function findHeadingFiles(root: string): string[] {
-  const files = fg.sync(ID_GLOB, { cwd: root, absolute: true });
+  const files = fg.sync(ID_GLOBS, { cwd: root, absolute: true });
   const ordered = [
+    join(root, "src/app/page.tsx"),
+    join(root, "app/page.tsx"),
+    join(root, "src/pages/index.tsx"),
+    join(root, "pages/index.tsx"),
     join(root, "src/App.tsx"),
     join(root, "src/App.jsx"),
     ...files.filter(
-      (f) => !f.endsWith("App.tsx") && !f.endsWith("App.jsx"),
+      (f) =>
+        !f.endsWith("App.tsx") &&
+        !f.endsWith("App.jsx") &&
+        !f.endsWith("layout.tsx") &&
+        !f.endsWith("layout.jsx"),
     ),
   ];
   const seen = new Set<string>();

@@ -19,6 +19,8 @@ import { detectPackageManager } from "./detect-pm.js";
 
 export type CommonCliOptions = {
   cwd: string;
+  app?: string;
+  allApps?: boolean;
   json?: boolean;
   verbose?: boolean;
 };
@@ -28,7 +30,7 @@ export type DoctorCliOptions = CommonCliOptions & {
 };
 
 function printHelp(): void {
-  console.log(`nuvio — CLI for React + Vite
+  console.log(`nuvio — CLI for React frontends (Vite + Next.js)
 
 Usage:
   nuvio init [options]
@@ -40,7 +42,9 @@ Usage:
   nuvio brand apply [options]
 
 Common options:
-  --cwd <path>          Project root (default: current directory)
+  --cwd <path>          Repo or app root (default: current directory)
+  --app <id>            Frontend app id (e.g. apps/next-dogfood, frontend)
+  --all-apps            Run against every detected frontend app
   --json                Machine-readable output (doctor, scan, stats)
   --verbose             Show error stacks
   -h, --help            Show help
@@ -76,7 +80,8 @@ Brand apply options:
 Examples:
   pnpm dlx @nuvio/cli init --yes
   pnpm dlx @nuvio/cli doctor
-  pnpm dlx @nuvio/cli scan --json
+  pnpm dlx @nuvio/cli scan --app next-dogfood --cwd .
+  pnpm dlx @nuvio/cli doctor --all-apps --cwd .
   pnpm dlx @nuvio/cli stats
   pnpm dlx @nuvio/cli coverage verify --page dashboard --cwd apps/tailadmin-dogfood
   pnpm dlx @nuvio/cli coverage verify --all --cwd apps/tailadmin-dogfood
@@ -115,8 +120,12 @@ function parseInitArgs(argv: string[]): {
     else if (arg === "--verbose") opts.verbose = true;
     else if (arg === "--pm") {
       opts.pm = args[++i] as PackageManager;
-    } else if (arg === "--cwd") {
+    }     else if (arg === "--cwd") {
       opts.cwd = resolve(args[++i] ?? ".");
+    } else if (arg === "--app") {
+      opts.app = args[++i] ?? "";
+    } else if (arg === "--all-apps") {
+      opts.allApps = true;
     } else if (arg.startsWith("-")) {
       console.error(`Unknown option: ${arg}`);
       help = true;
@@ -157,6 +166,13 @@ function parseProjectCommandArgs(
       const cwd = resolve(args[++i] ?? ".");
       common.cwd = cwd;
       doctor.cwd = cwd;
+    } else if (arg === "--app") {
+      const app = args[++i] ?? "";
+      common.app = app;
+      doctor.app = app;
+    } else if (arg === "--all-apps") {
+      common.allApps = true;
+      doctor.allApps = true;
     } else if (arg === "--skip-dev-server") {
       doctor.skipDevServer = true;
     } else if (arg.startsWith("-")) {
@@ -205,6 +221,10 @@ function parseCoverageVerifyArgs(argv: string[]): {
       common.verbose = true;
     } else if (arg === "--cwd") {
       common.cwd = resolve(args[++i] ?? ".");
+    } else if (arg === "--app") {
+      common.app = args[++i] ?? "";
+    } else if (arg === "--all-apps") {
+      common.allApps = true;
     } else if (arg === "--page") {
       page = args[++i];
     } else if (arg === "--manifest") {
@@ -260,6 +280,10 @@ function parseBrandArgs(argv: string[]): {
       common.verbose = true;
     } else if (arg === "--cwd") {
       common.cwd = resolve(args[++i] ?? ".");
+    } else if (arg === "--app") {
+      common.app = args[++i] ?? "";
+    } else if (arg === "--all-apps") {
+      common.allApps = true;
     } else if (arg === "--page") {
       page = args[++i];
     } else if (arg === "--manifest") {
@@ -343,13 +367,25 @@ export async function runCli(argv: string[]): Promise<number> {
       case "doctor":
         return await runDoctor({
           cwd: doctorOpts.cwd,
+          app: doctorOpts.app,
+          allApps: doctorOpts.allApps,
           json: doctorOpts.json,
           checkDevServer: !doctorOpts.skipDevServer,
         });
       case "scan":
-        return runScan({ cwd: commonOpts.cwd, json: commonOpts.json });
+        return runScan({
+          cwd: commonOpts.cwd,
+          app: commonOpts.app,
+          allApps: commonOpts.allApps,
+          json: commonOpts.json,
+        });
       case "stats":
-        return runStats({ cwd: commonOpts.cwd, json: commonOpts.json });
+        return runStats({
+          cwd: commonOpts.cwd,
+          app: commonOpts.app,
+          allApps: commonOpts.allApps,
+          json: commonOpts.json,
+        });
       case "coverage": {
         if (!coverageOpts || coverageOpts.subcommand !== "verify") {
           console.error("Usage: nuvio coverage verify --page <slug>");
@@ -362,6 +398,8 @@ export async function runCli(argv: string[]): Promise<number> {
         }
         return runCoverageVerify({
           cwd: coverageOpts.common.cwd,
+          app: coverageOpts.common.app,
+          allApps: coverageOpts.common.allApps,
           page: coverageOpts.page,
           manifest: coverageOpts.manifest,
           all: coverageOpts.all,
@@ -381,6 +419,8 @@ export async function runCli(argv: string[]): Promise<number> {
         if (brandOpts.subcommand === "scan") {
           return runBrandScan({
             cwd: brandOpts.common.cwd,
+            app: brandOpts.common.app,
+            allApps: brandOpts.common.allApps,
             page: brandOpts.page,
             manifest: brandOpts.manifest,
             all: brandOpts.all,
@@ -389,6 +429,8 @@ export async function runCli(argv: string[]): Promise<number> {
         }
         return runBrandApply({
           cwd: brandOpts.common.cwd,
+          app: brandOpts.common.app,
+          allApps: brandOpts.common.allApps,
           page: brandOpts.page,
           manifest: brandOpts.manifest,
           all: brandOpts.all,

@@ -1,6 +1,6 @@
 # nuvio
 
-**v1.1.0** — visual editor for **React + Vite + Tailwind** (dev-only; nothing runs in production).
+**v2.0** — visual editor for **React + Vite + Tailwind + Next.js** (dev-only; nothing runs in production).
 
 Define a project **Brand Kit** and apply it by category across pages, or click individual elements to edit text and Tailwind classes — preview first, then apply to real source files.
 
@@ -11,7 +11,7 @@ Define a project **Brand Kit** and apply it by category across pages, or click i
 [![Tailwind 3–4](https://img.shields.io/badge/Tailwind-3.x%20%7C%204.x-38bdf8)](#vite--tailwind-coverage)
 [![React 18–19](https://img.shields.io/badge/React-18%20%7C%2019-61dafb)](#vite--tailwind-coverage)
 
-**Published packages (1.1.0):** `@nuvio/cli` · `@nuvio/vite-plugin` · `@nuvio/overlay` · `@nuvio/shared` · `@nuvio/ast-engine`
+**Published packages (2.0.0-alpha):** `@nuvio/cli` · `@nuvio/vite-plugin` · `@nuvio/next` · `@nuvio/overlay` · `@nuvio/shared` · `@nuvio/ast-engine`
 
 Stop burning AI prompts on padding, colors, and layout tweaks — edit visually, keep real source files.
 
@@ -33,7 +33,16 @@ Categories: **card**, **heading**, **text**, **button**, **table**, **form**, **
 
 <img src="docs/assets/nuvio-element16.gif" width="100%" alt="nuvio demo: Edit on → click an element → Preview Changes → Apply to Code" />
 
-**Try Brand Kit (recommended):**
+**Try Next.js dogfood:**
+
+```bash
+pnpm install
+pnpm dev:next
+```
+
+Open `http://localhost:3001` → nuvio chip → **Edit on**. See [docs/mds/NEXT.md](docs/mds/NEXT.md).
+
+**Try Brand Kit (Vite, recommended):**
 
 ```bash
 pnpm install
@@ -58,12 +67,23 @@ Demo assets: [nuvio-brand-kit26.gif](docs/assets/nuvio-brand-kit26.gif) · [nuvi
 
 **You need:** React · Vite · Tailwind · Node 20+
 
-In your project folder (`package.json` + `vite.config`):
+In your project folder (`package.json` + `vite.config` or `next.config`):
+
+**Vite:**
 
 ```bash
 pnpm dlx @nuvio/cli init --yes
 pnpm dev
 ```
+
+**Next.js:**
+
+```bash
+pnpm dlx @nuvio/cli init --yes
+pnpm dev
+```
+
+(`init` detects the framework and wires `withNuvio()` + custom `server.js` for Next.)
 
 Open localhost → **Edit on**.
 
@@ -78,15 +98,16 @@ After init, see `nuvio/START_HERE.md` and `nuvio/AGENT.md` in your project.
 
 Commands omit version pins — `pnpm dlx @nuvio/cli` uses npm **latest** (currently **1.1.0**).
 
-More: [CHANGELOG.md](CHANGELOG.md) · [examples/README.md](examples/README.md) · [TailAdmin dogfood](apps/tailadmin-dogfood/README.md)
+More: [CHANGELOG.md](CHANGELOG.md) · [Next.js guide](docs/mds/NEXT.md) · [Monorepo](docs/mds/MONOREPO.md) · [examples/README.md](examples/README.md) · [TailAdmin dogfood](apps/tailadmin-dogfood/README.md)
 
 ---
 
-## Vite + Tailwind coverage
+## Vite + Tailwind + Next.js coverage
 
-| Area | 1.1.0 support |
+| Area | v2.0 support |
 | ---- | ------------- |
 | **Vite** | 5.4+, 6.x, 8.x (`create vite` react-ts) |
+| **Next.js** | 14.x, 15.x App Router + Pages Router (webpack dev) |
 | **React** | 18.3+, 19.x |
 | **Tailwind** | 3.x and 4.x utility patches |
 | **`className`** | literals, `cn()`, conditional `cn`, static `classnames()` |
@@ -103,6 +124,7 @@ More: [CHANGELOG.md](CHANGELOG.md) · [examples/README.md](examples/README.md) �
 | [vite-basic](examples/vite-basic/) | `pnpm --filter @nuvio/example-vite-basic dev` | init + click-to-tag |
 | [shadcn-dashboard](examples/shadcn-dashboard/) | `pnpm --filter @nuvio/example-shadcn-dashboard dev` | shadcn `cn()` + Card/Button |
 | [tailadmin-dogfood](apps/tailadmin-dogfood/) | `pnpm dev:tailadmin` | Full TailAdmin + **Brand Kit** + PCC dogfood |
+| [next-dogfood](apps/next-dogfood/) | `pnpm dev:next` | Next App Router + Brand Kit dogfood |
 
 See [examples/README.md](examples/README.md).
 

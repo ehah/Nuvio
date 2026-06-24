@@ -3,12 +3,11 @@ import type { IndexWireEntry, LibraryId } from "@nuvio/shared";
 import {
   buildSourceIndex,
   detectProjectLibraries,
-  NUVIO_DEFAULT_SCAN_GLOBS,
+  resolveProjectScanGlobs,
   type BuildSourceIndexResult,
 } from "@nuvio/vite-plugin/scan";
+import type { AppContext } from "./app-context.js";
 import { detectProject, type ProjectContext } from "./detect-project.js";
-
-const SCAN_GLOBS = [...NUVIO_DEFAULT_SCAN_GLOBS, "app/**/*.{tsx,jsx}"];
 
 export type ProjectScanResult = {
   ctx: ProjectContext;
@@ -16,10 +15,23 @@ export type ProjectScanResult = {
   index: BuildSourceIndexResult;
 };
 
+export type AppScanResult = {
+  app: AppContext;
+  detectedLibraries: LibraryId[];
+  index: BuildSourceIndexResult;
+};
+
+export function scanAppContext(app: AppContext): AppScanResult {
+  const detectedLibraries = detectProjectLibraries(app.appRoot, app.packageJson);
+  const index = buildSourceIndex(app.appRoot, [...app.scanGlobs], { detectedLibraries });
+  return { app, detectedLibraries, index };
+}
+
 export function scanProject(root: string): ProjectScanResult {
   const ctx = detectProject(root);
   const detectedLibraries = detectProjectLibraries(root, ctx.packageJson);
-  const index = buildSourceIndex(root, SCAN_GLOBS, { detectedLibraries });
+  const scanGlobs = [...resolveProjectScanGlobs(root)];
+  const index = buildSourceIndex(root, scanGlobs, { detectedLibraries });
   return { ctx, detectedLibraries, index };
 }
 

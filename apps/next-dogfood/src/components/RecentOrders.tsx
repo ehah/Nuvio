@@ -4,13 +4,26 @@ interface Product {
   category: string;
   price: string;
 }
-
 const tableData: Product[] = [
-  { id: 1, name: "MacBook Pro 13”", category: "Laptop", price: "$2399.00" },
-  { id: 2, name: "Apple Watch Ultra", category: "Watch", price: "$879.00" },
-  { id: 3, name: "iPhone 15 Pro Max", category: "SmartPhone", price: "$1869.00" },
+  {
+    id: 1,
+    name: "MacBook Pro 13”",
+    category: "Laptop",
+    price: "$2399.00",
+  },
+  {
+    id: 2,
+    name: "Apple Watch Ultra",
+    category: "Watch",
+    price: "$879.00",
+  },
+  {
+    id: 3,
+    name: "iPhone 15 Pro Max",
+    category: "SmartPhone",
+    price: "$1869.00",
+  },
 ];
-
 export function RecentOrders() {
   return (
     <div
@@ -20,17 +33,26 @@ export function RecentOrders() {
       <div className="mb-4 flex items-center justify-between">
         <h3
           data-nuvio-id="orders.title"
-          className="text-lg font-semibold text-gray-800"
+          className="text-lg font-semibold text-gray-800 xl:text-base xl:font-medium xl:text-purple-600"
         >
           Recent Orders
         </h3>
-        <button
-          data-nuvio-id="orders.seeAll"
-          type="button"
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700"
-        >
-          See all
-        </button>
+        <div className="flex gap-2">
+          <button
+            data-nuvio-id="orders.filter"
+            type="button"
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 xl:bg-purple-600 xl:text-white xl:rounded-md xl:px-4 xl:py-2 hover:bg-purple-700"
+          >
+            Filter
+          </button>
+          <button
+            data-nuvio-id="orders.seeAll"
+            type="button"
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 xl:bg-purple-600 xl:text-white xl:rounded-md xl:px-4 xl:py-2 hover:bg-purple-700"
+          >
+            See all
+          </button>
+        </div>
       </div>
       <div data-nuvio-id="orders.table" className="max-w-full overflow-x-auto">
         <table className="min-w-full text-left text-sm">

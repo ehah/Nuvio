@@ -1,0 +1,41 @@
+page: home
+route: /
+description: Next.js dogfood ecommerce dashboard
+categories:
+  card:
+    required: true
+    hosts:
+      - metric.customers.card
+      - metric.orders.card
+      - demo.card
+      - target.monthly.card
+      - chart.sales
+      - orders.section
+  button:
+    required: true
+    hosts:
+      - orders.filter
+      - orders.seeAll
+  heading:
+    required: true
+    hosts:
+      - dashboard.title
+      - demo.title
+      - target.monthly.title
+      - chart.sales.title
+      - orders.title
+  text:
+    required: false
+    hosts:
+      - demo.subtitle
+      - target.monthly.subtitle
+      - chart.sales.subtitle
+      - metric.customers.label
+      - metric.customers.value
+      - metric.orders.label
+      - metric.orders.value
+      - target.monthly.value
+  table:
+    required: true
+    hosts:
+      - orders.table

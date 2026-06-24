@@ -1,0 +1,24 @@
+page: forms
+route: /forms
+description: Next.js dogfood form elements page
+categories:
+  card:
+    required: true
+    hosts:
+      - forms.default.card
+      - forms.states.card
+  heading:
+    required: true
+    hosts:
+      - form.page.title
+      - forms.default.title
+      - forms.states.title
+  text:
+    required: false
+    hosts:
+      - forms.states.desc
+  form:
+    required: true
+    hosts:
+      - form.email.label
+      - form.email.input

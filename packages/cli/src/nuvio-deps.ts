@@ -1,6 +1,9 @@
 import { readFileSync } from "node:fs";
 
-export type NuvioPackageName = "@nuvio/vite-plugin" | "@nuvio/overlay";
+export type NuvioPackageName =
+  | "@nuvio/vite-plugin"
+  | "@nuvio/overlay"
+  | "@nuvio/next";
 
 export function readPackageJson(
   packageJsonPath: string,
@@ -30,6 +33,13 @@ export function hasNuvioDependency(
 export function hasNuvioPackages(pkg: Record<string, unknown>): boolean {
   return (
     hasNuvioDependency(pkg, "@nuvio/vite-plugin") &&
+    hasNuvioDependency(pkg, "@nuvio/overlay")
+  );
+}
+
+export function hasNextNuvioPackages(pkg: Record<string, unknown>): boolean {
+  return (
+    hasNuvioDependency(pkg, "@nuvio/next") &&
     hasNuvioDependency(pkg, "@nuvio/overlay")
   );
 }

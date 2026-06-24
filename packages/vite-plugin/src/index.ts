@@ -11,8 +11,6 @@ import { detectProjectLibraries } from "./detect-libraries.js";
 import { handleTagElementMessage } from "./handle-tag-element.js";
 import { injectJsxLocAttributes } from "./jsx-loc-transform.js";
 import {
-  NUVIO_BRAND_PATH,
-  NUVIO_PCC_PATH,
   NUVIO_WS_PATH,
   PROTOCOL_VERSION,
   type DuplicateIdError,
@@ -24,14 +22,15 @@ import {
 import { readRuntimeVersions } from "./read-dep-version.js";
 import { assertPathWithinRoot } from "@nuvio/shared/secure-path";
 import { pathnameFromUpgradeUrl } from "./upgrade-url.js";
-import { handleBrandConfigHttp, brandConfigPath } from "./handle-brand-config.js";
-import { handlePccConfigHttp } from "./handle-pcc-config.js";
+import { brandConfigPath } from "./handle-brand-config.js";
+import { tryHandleNuvioConfigHttp } from "./nuvio-config-http.js";
 import {
   buildSourceIndex,
   extractIdsFromSource,
   pickBestSourceIndex,
   type BuildSourceIndexResult,
 } from "./source-index.js";
+import { NUVIO_VITE_SCAN_GLOBS } from "./scan-globs.js";
 
 const APP_ENTRY_CANDIDATES = ["src/App.tsx", "src/app.tsx", "App.tsx"] as const;
 
@@ -105,11 +104,7 @@ export interface NuvioPluginOptions {
  * Include monorepo layouts (`apps/` / `packages/`) so indexing still finds sources when
  * `root` resolves to the repo root (only `./src/**` would otherwise match nothing).
  */
-const DEFAULT_GLOBS = [
-  "src/**/*.{tsx,jsx}",
-  "apps/**/src/**/*.{tsx,jsx}",
-  "packages/**/src/**/*.{tsx,jsx}",
-];
+const DEFAULT_GLOBS = [...NUVIO_VITE_SCAN_GLOBS];
 
 function isAllowedOrigin(origin: string | undefined): boolean {
   if (origin === undefined || origin === "") {
@@ -623,23 +618,17 @@ export function nuvio(options?: NuvioPluginOptions): Plugin {
       });
 
       server.middlewares.use((req, res, next) => {
-        const url = req.url ?? "";
-        const pathname = url.split("?")[0] ?? "";
-        if (pathname === NUVIO_PCC_PATH) {
-          void handlePccConfigHttp(req, res, {
-            projectRoot,
-            writeGuardRoot,
-          });
-          return;
-        }
-        if (pathname !== NUVIO_BRAND_PATH) {
+        void (async () => {
+          if (
+            await tryHandleNuvioConfigHttp(req, res, {
+              projectRoot,
+              writeGuardRoot,
+            })
+          ) {
+            return;
+          }
           next();
-          return;
-        }
-        void handleBrandConfigHttp(req, res, {
-          projectRoot,
-          writeGuardRoot,
-        });
+        })();
       });
 
       rebuildIndex();

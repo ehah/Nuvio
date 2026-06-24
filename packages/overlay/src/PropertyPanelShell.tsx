@@ -161,6 +161,8 @@ export type PropertyPanelShellProps = {
   onRequestBrandBulkApply: () => void;
   onBrandSaved: () => void;
   onBrandDraftChange: (draft: BrandConfig) => void;
+  /** Host framework route (Next `usePathname`); Brand Kit PCC fetch uses this when set. */
+  routePathname?: string;
   onBrandRouteChange?: () => void;
   onRequestApply: (ops: PatchOp[], patchHostId: string) => void;
   onRequestUndo: () => void;
@@ -372,6 +374,7 @@ export function PropertyPanelShell({
   onRequestBrandBulkApply,
   onBrandSaved,
   onBrandDraftChange,
+  routePathname,
   onBrandRouteChange,
   onRequestApply,
   onRequestUndo,
@@ -1454,6 +1457,7 @@ export function PropertyPanelShell({
               brandBulkValidatedConfig={brandBulkValidatedConfig}
               onRequestBrandBulkPreview={onRequestBrandBulkPreview}
               onRequestBrandBulkApply={onRequestBrandBulkApply}
+              routePathname={routePathname}
               onBrandRouteChange={onBrandRouteChange}
               onBrandSaved={onBrandSaved}
               onBrandDraftChange={onBrandDraftChange}

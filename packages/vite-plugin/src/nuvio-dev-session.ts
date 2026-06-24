@@ -26,14 +26,18 @@ import {
   pickBestSourceIndex,
   type BuildSourceIndexResult,
 } from "./source-index.js";
+import {
+  listExistingSourceWatchDirs,
+  resolveProjectScanGlobs,
+} from "./scan-globs.js";
 
-const APP_ENTRY_CANDIDATES = ["src/App.tsx", "src/app.tsx", "App.tsx"] as const;
-
-const DEFAULT_GLOBS = [
-  "src/**/*.{tsx,jsx}",
-  "apps/**/src/**/*.{tsx,jsx}",
-  "packages/**/src/**/*.{tsx,jsx}",
-];
+const APP_ENTRY_CANDIDATES = [
+  "src/App.tsx",
+  "src/app.tsx",
+  "App.tsx",
+  "src/app/page.tsx",
+  "app/page.tsx",
+] as const;
 
 export type NuvioDevSessionOptions = {
   enabled?: boolean;
@@ -124,10 +128,10 @@ export function attachNuvioDevSession(
 ): NuvioDevSessionHandle {
   const log = options.log ?? console;
   const enabled = options.enabled ?? process.env.NUVIO !== "0";
-  const scanGlobs = options.scanGlobs ?? DEFAULT_GLOBS;
+  const serverRoot = path.resolve(options.root);
+  const scanGlobs = options.scanGlobs ?? [...resolveProjectScanGlobs(serverRoot)];
   const verbose = options.verbose ?? false;
   const classNameMode = options.classNameMode ?? "literal-only";
-  const serverRoot = path.resolve(options.root);
   const fromConfigFile = options.configDir ?? "";
   const rootCandidates = [path.resolve(fromConfigFile || serverRoot), serverRoot, process.cwd()];
   const rootsLabel = [...new Set(rootCandidates)].join(" | ");
@@ -158,7 +162,8 @@ export function attachNuvioDevSession(
     let built = pickBestSourceIndex(rootCandidates, scanGlobs, indexOptions);
     built = supplementIndexFromAppTsx(serverRoot, built, classNameMode, log.warn);
     if (built.entries.length === 0) {
-      const fallback = buildSourceIndex(serverRoot, ["src/**/*.{tsx,jsx}"], indexOptions);
+      const fallbackGlobs = [...resolveProjectScanGlobs(serverRoot)];
+      const fallback = buildSourceIndex(serverRoot, fallbackGlobs, indexOptions);
       if (fallback.entries.length > 0) {
         log.warn(
           `[Nuvio] Multi-root scan yielded 0 ids; using serverRoot-only index (${fallback.entries.length} id(s)).`,
@@ -218,17 +223,20 @@ export function attachNuvioDevSession(
     };
   })();
 
-  const srcDir = path.join(serverRoot, "src");
-  let fileWatcher: ReturnType<typeof watch> | null = null;
-  if (enabled && fs.existsSync(srcDir)) {
-    try {
-      fileWatcher = watch(srcDir, { recursive: true }, (_event, filename) => {
-        if (filename && /\.(tsx|jsx)$/.test(filename)) {
-          debouncedRebuild();
-        }
-      });
-    } catch {
-      /* fs.watch recursive may fail on some platforms */
+  const fileWatchers: ReturnType<typeof watch>[] = [];
+  if (enabled) {
+    for (const dir of listExistingSourceWatchDirs(serverRoot)) {
+      try {
+        fileWatchers.push(
+          watch(dir, { recursive: true }, (_event, filename) => {
+            if (filename && /\.(tsx|jsx)$/.test(filename)) {
+              debouncedRebuild();
+            }
+          }),
+        );
+      } catch {
+        /* fs.watch recursive may fail on some platforms */
+      }
     }
   }
 
@@ -527,7 +535,9 @@ export function attachNuvioDevSession(
     rebuildIndex,
     close: () => {
       httpServer.off("upgrade", onUpgrade);
-      fileWatcher?.close();
+      for (const watcher of fileWatchers) {
+        watcher.close();
+      }
       for (const client of wss.clients) {
         client.close();
       }
@@ -536,4 +546,8 @@ export function attachNuvioDevSession(
   };
 }
 
-export { DEFAULT_GLOBS as NUVIO_DEFAULT_SCAN_GLOBS };
+export { NUVIO_VITE_SCAN_GLOBS as NUVIO_DEFAULT_SCAN_GLOBS, NUVIO_NEXT_SCAN_GLOBS } from "./scan-globs.js";
+export {
+  tryHandleNuvioConfigHttp,
+  type NuvioConfigHttpContext,
+} from "./nuvio-config-http.js";

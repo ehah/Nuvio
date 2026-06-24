@@ -7,10 +7,13 @@ export type NuvioShadowMount = {
   mount: HTMLElement;
 };
 
-export function useNuvioShadowMount(): NuvioShadowMount | null {
+export function useNuvioShadowMount(enabled = true): NuvioShadowMount | null {
   const [mount, setMount] = useState<NuvioShadowMount | null>(null);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     const host = document.createElement("div");
     host.id = NUVIO_SHADOW_HOST_ID;
     host.style.position = "fixed";
@@ -37,7 +40,7 @@ export function useNuvioShadowMount(): NuvioShadowMount | null {
       setMount(null);
       host.remove();
     };
-  }, []);
+  }, [enabled]);
 
-  return mount;
+  return enabled ? mount : null;
 }

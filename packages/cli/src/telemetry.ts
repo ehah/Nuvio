@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import os from "node:os";
 import { PostHog } from "posthog-node";
+import type { AppContext, FrameworkKind, RouterKind } from "./app-context.js";
 import type { PackageManager } from "./detect-pm.js";
 import type { ProjectContext } from "./detect-project.js";
 import { MSG } from "./messages.js";
@@ -22,8 +23,11 @@ export type CliTelemetryProps = {
   arch: string;
   node: string;
   package_manager?: PackageManager;
+  framework?: FrameworkKind | "unknown";
+  router?: RouterKind;
   has_react?: boolean;
   has_vite?: boolean;
+  has_next?: boolean;
   has_tailwind?: boolean;
   error_code?: string;
   result_tier?: "full" | "partial" | "failed";
@@ -220,7 +224,29 @@ export function buildCliTelemetryProps(
     props.has_react = true;
     props.has_vite = true;
     props.has_tailwind = project.tailwindOk;
+    props.framework = "vite";
+    props.router = "none";
   }
+  return props;
+}
+
+export function buildAppTelemetryProps(
+  pm: PackageManager,
+  app: AppContext,
+): CliTelemetryProps {
+  const props: CliTelemetryProps = {
+    nuvio_version: NUVIO_VERSION,
+    os: process.platform,
+    arch: os.arch(),
+    node: process.version,
+    package_manager: pm,
+    framework: app.framework,
+    router: app.router,
+    has_react: true,
+    has_vite: app.framework === "vite",
+    has_next: app.framework.startsWith("next"),
+    has_tailwind: app.tailwindOk,
+  };
   return props;
 }
 

@@ -1,3 +1,5 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { runInit } from "../src/init.js";
 import { runScan } from "../src/scan-cmd.js";
@@ -59,6 +61,32 @@ describe("runScan", () => {
     const parsed = JSON.parse(logs.join("\n")) as {
       hosts: Array<{ id: string }>;
     };
+    expect(parsed.hosts.some((h) => h.id === "page.title")).toBe(true);
+  });
+
+  it("scans next-dogfood from monorepo root with --app", () => {
+    const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+    const logs: string[] = [];
+    const orig = console.log;
+    console.log = (...args: unknown[]) => {
+      logs.push(args.map(String).join(" "));
+    };
+    try {
+      const code = runScan({
+        cwd: repoRoot,
+        app: "next-dogfood",
+        json: true,
+      });
+      expect(code).toBe(0);
+    } finally {
+      console.log = orig;
+    }
+    const parsed = JSON.parse(logs.join("\n")) as {
+      hostCount: number;
+      framework: string;
+      hosts: Array<{ id: string }>;
+    };
+    expect(parsed.framework).toMatch(/^next-/);
     expect(parsed.hosts.some((h) => h.id === "page.title")).toBe(true);
   });
 });

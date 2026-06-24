@@ -1,7 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { PreflightError } from "./detect-project.js";
-import { scanProject } from "./project-scan.js";
+import type { IndexWireEntry } from "@nuvio/shared";
 import {
   DEFAULT_BRAND_CONFIG,
   evaluateBrandPageScan,
@@ -18,9 +17,15 @@ import {
   loadPccManifestFromFile,
   resolvePccManifestPath,
 } from "@nuvio/shared/load-pcc-manifest";
+import type { AppContext } from "./app-context.js";
+import {
+  handlePreflightError,
+  resolveCommandApps,
+  scanForApp,
+  type AppScopedCommandOptions,
+} from "./app-command.js";
 
-export type BrandScanOptions = {
-  cwd: string;
+export type BrandScanOptions = AppScopedCommandOptions & {
   page?: string;
   manifest?: string;
   all?: boolean;
@@ -103,7 +108,7 @@ function printAllHumanReport(
 
 function scanLoadedManifest(
   manifestPath: string,
-  entries: ReturnType<typeof scanProject>["index"]["entries"],
+  entries: readonly IndexWireEntry[],
   brand: ReturnType<typeof readProjectBrandConfig>,
 ):
   | { ok: true; result: BrandPageScanResult }
@@ -122,29 +127,19 @@ function scanLoadedManifest(
   };
 }
 
-export function runBrandScanAll(opts: BrandScanOptions): number {
-  const manifestPaths = listPccManifestFiles(opts.cwd);
+function runBrandScanAllForApp(app: AppContext, opts: BrandScanOptions): number {
+  const manifestPaths = listPccManifestFiles(app.appRoot);
   if (manifestPaths.length === 0) {
-    console.error(`No PCC manifests found under ${resolve(opts.cwd)}/nuvio/pages`);
+    console.error(`No PCC manifests found under ${resolve(app.appRoot)}/nuvio/pages`);
     return 2;
   }
 
-  const brand = readProjectBrandConfig(opts.cwd);
-
-  let scan;
-  try {
-    scan = scanProject(opts.cwd);
-  } catch (e) {
-    if (e instanceof PreflightError) {
-      console.error(e.message);
-      return 3;
-    }
-    throw e;
-  }
+  const brand = readProjectBrandConfig(app.appRoot);
+  const { index } = scanForApp(app);
 
   const pages: Array<{ manifestPath: string; result: BrandPageScanResult }> = [];
   for (const manifestPath of manifestPaths) {
-    const scanned = scanLoadedManifest(manifestPath, scan.index.entries, brand);
+    const scanned = scanLoadedManifest(manifestPath, index.entries, brand);
     if (!scanned.ok) {
       console.error(scanned.message);
       return scanned.code;
@@ -155,7 +150,7 @@ export function runBrandScanAll(opts: BrandScanOptions): number {
   const pass = pages.every((page) => page.result.pass);
 
   if (opts.json) {
-    console.log(JSON.stringify({ pass, brand, pages }, null, 2));
+    console.log(JSON.stringify({ pass, brand, pages, appId: app.appId }, null, 2));
     return pass ? 0 : 1;
   }
 
@@ -163,35 +158,25 @@ export function runBrandScanAll(opts: BrandScanOptions): number {
   return pass ? 0 : 1;
 }
 
-export function runBrandScan(opts: BrandScanOptions): number {
+function runBrandScanForApp(app: AppContext, opts: BrandScanOptions): number {
   if (opts.all) {
-    return runBrandScanAll(opts);
+    return runBrandScanAllForApp(app, opts);
   }
 
   let manifestPath: string;
   try {
     manifestPath = resolve(
-      resolvePccManifestPath(opts.cwd, { page: opts.page, manifest: opts.manifest }),
+      resolvePccManifestPath(app.appRoot, { page: opts.page, manifest: opts.manifest }),
     );
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
     return 2;
   }
 
-  const brand = readProjectBrandConfig(opts.cwd);
+  const brand = readProjectBrandConfig(app.appRoot);
+  const { index } = scanForApp(app);
 
-  let scan;
-  try {
-    scan = scanProject(opts.cwd);
-  } catch (e) {
-    if (e instanceof PreflightError) {
-      console.error(e.message);
-      return 3;
-    }
-    throw e;
-  }
-
-  const scanned = scanLoadedManifest(manifestPath, scan.index.entries, brand);
+  const scanned = scanLoadedManifest(manifestPath, index.entries, brand);
   if (!scanned.ok) {
     console.error(scanned.message);
     return scanned.code;
@@ -201,6 +186,7 @@ export function runBrandScan(opts: BrandScanOptions): number {
     console.log(
       JSON.stringify(
         {
+          appId: app.appId,
           manifestPath,
           ...scanned.result,
         },
@@ -213,4 +199,35 @@ export function runBrandScan(opts: BrandScanOptions): number {
 
   printHumanReport(scanned.result, manifestPath);
   return scanned.result.pass ? 0 : 1;
+}
+
+export function runBrandScan(opts: BrandScanOptions): number {
+  let apps: AppContext[];
+  try {
+    apps = resolveCommandApps(opts);
+  } catch (e) {
+    const code = handlePreflightError(e);
+    if (code !== null) {
+      return code;
+    }
+    throw e;
+  }
+
+  let exit = 0;
+  for (let i = 0; i < apps.length; i++) {
+    const app = apps[i]!;
+    if (apps.length > 1) {
+      if (i > 0) {
+        console.log("");
+      }
+      console.log(`=== ${app.appId} ===`);
+    }
+    exit = Math.max(exit, runBrandScanForApp(app, opts));
+  }
+  return exit;
+}
+
+// Back-compat for tests importing runBrandScanAll
+export function runBrandScanAll(opts: BrandScanOptions): number {
+  return runBrandScan({ ...opts, all: true });
 }

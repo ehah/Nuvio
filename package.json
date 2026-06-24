@@ -23,7 +23,7 @@
     "telemetry:smoke": "node scripts/telemetry-smoke.mjs",
     "posthog:verify": "node scripts/posthog-verify.mjs",
     "publish:alpha": "pnpm -r publish --filter \"./packages/*\" --access public --tag alpha",
-    "publish:stable": "pnpm -r publish --filter \"@nuvio/shared\" --filter \"@nuvio/ast-engine\" --filter \"@nuvio/vite-plugin\" --filter \"@nuvio/overlay\" --filter \"@nuvio/cli\" --access public"
+    "publish:stable": "pnpm -r publish --filter \"@nuvio/shared\" --filter \"@nuvio/ast-engine\" --filter \"@nuvio/vite-plugin\" --filter \"@nuvio/overlay\" --filter \"@nuvio/cli\" --filter \"@nuvio/next\" --access public"
   },
   "engines": {
     "node": ">=20"

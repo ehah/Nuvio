@@ -1,31 +1,22 @@
 import type { IncomingMessage, Server as HttpServer } from "node:http";
 import type { Duplex } from "node:stream";
 import {
-  attachNuvioDevSession,
+  attachNuvioToNextServer,
+  NUVIO_NEXT_SCAN_GLOBS,
   type NuvioDevSessionHandle,
   type NuvioDevSessionOptions,
-} from "@nuvio/vite-plugin/dev-session";
+  type NuvioNextOptions,
+} from "./attach-next-server.js";
 
-export type NuvioNextOptions = Omit<NuvioDevSessionOptions, "root"> & {
-  /** Project root (where package.json lives). Defaults to process.cwd(). */
-  root?: string;
-};
+export type { NuvioNextOptions, NuvioDevSessionHandle, NuvioDevSessionOptions };
+export { attachNuvioToNextServer, NUVIO_NEXT_SCAN_GLOBS };
 
-/**
- * Attach Nuvio to a Next.js custom dev server HTTP instance.
- * Use with `node server.js` during development (App Router client components).
- */
-export function attachNuvioToNextServer(
-  httpServer: HttpServer,
-  options?: NuvioNextOptions,
-): NuvioDevSessionHandle {
-  return attachNuvioDevSession(httpServer, {
-    ...options,
-    root: options?.root ?? process.cwd(),
-  });
-}
-
-export type { NuvioDevSessionHandle, NuvioDevSessionOptions };
+export { withNuvio, type WithNuvioOptions } from "./with-nuvio.js";
+export {
+  createNuvioNextDevServer,
+  type CreateNuvioNextDevServerOptions,
+  type NuvioNextDevServer,
+} from "./create-next-dev-server.js";
 
 /** @deprecated use attachNuvioToNextServer */
 export function attachNuvioToServer(

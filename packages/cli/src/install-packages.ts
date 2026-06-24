@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import type { PackageManager } from "./detect-pm.js";
-import { installCommand } from "./detect-pm.js";
+import { installCommand, nextInstallCommand } from "./detect-pm.js";
 
 function parseInstalledVersion(
   pkg: Record<string, unknown>,
@@ -29,12 +29,52 @@ export function packagesNeedInstall(
   return false;
 }
 
+export function nextPackagesNeedInstall(
+  packageJsonPath: string,
+  overlayVersion: string,
+  nextVersion: string,
+): boolean {
+  const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as Record<
+    string,
+    unknown
+  >;
+  const overlay = parseInstalledVersion(pkg, "@nuvio/overlay");
+  const next = parseInstalledVersion(pkg, "@nuvio/next");
+  if (overlay !== overlayVersion) {
+    return true;
+  }
+  if (next !== nextVersion) {
+    return true;
+  }
+  return false;
+}
+
 export function runInstall(
   root: string,
   pm: PackageManager,
   version: string,
 ): { ok: boolean; message?: string } {
-  const cmd = installCommand(pm, version);
+  return runInstallCommand(root, pm, installCommand(pm, version));
+}
+
+export function runNextInstall(
+  root: string,
+  pm: PackageManager,
+  overlayVersion: string,
+  nextVersion: string,
+): { ok: boolean; message?: string } {
+  return runInstallCommand(
+    root,
+    pm,
+    nextInstallCommand(pm, overlayVersion, nextVersion),
+  );
+}
+
+function runInstallCommand(
+  root: string,
+  pm: PackageManager,
+  cmd: string,
+): { ok: boolean; message?: string } {
   const result = spawnSync(cmd, {
     cwd: root,
     shell: true,

@@ -1,4 +1,10 @@
 import { createInterface } from "node:readline";
+import { runInitNext } from "./init-next.js";
+import {
+  discoverWorkspace,
+  printWorkspaceDiscovery,
+  resolveTargetApps,
+} from "./app-context.js";
 import { detectProject, PreflightError } from "./detect-project.js";
 import {
   detectPackageManager,
@@ -28,6 +34,8 @@ import {
 
 export type InitOptions = {
   cwd: string;
+  app?: string;
+  allApps?: boolean;
   yes?: boolean;
   noInstall?: boolean;
   dryRun?: boolean;
@@ -117,7 +125,63 @@ function printSuccess(
 }
 
 export async function runInit(opts: InitOptions): Promise<number> {
-  const root = opts.cwd;
+  const discovery = discoverWorkspace(opts.cwd);
+
+  let initRoot = opts.cwd;
+  try {
+    const targets = resolveTargetApps({
+      cwd: opts.cwd,
+      app: opts.app,
+      allApps: opts.allApps,
+    });
+    if (opts.allApps) {
+      if (targets.length === 0) {
+        printWorkspaceDiscovery(discovery);
+        console.error("No frontend apps found to initialize.");
+        return 1;
+      }
+      let exit = 0;
+      for (const app of targets) {
+        if (app.framework === "vite") {
+          exit = Math.max(
+            exit,
+            await runInit({
+              ...opts,
+              cwd: app.appRoot,
+              allApps: false,
+              app: undefined,
+            }),
+          );
+        } else if (app.framework.startsWith("next")) {
+          exit = Math.max(exit, await runInitNext(opts, app));
+        } else {
+          console.error(`Init is not supported for ${app.framework} apps yet.`);
+          exit = Math.max(exit, 1);
+        }
+      }
+      return exit;
+    }
+    const target = targets[0]!;
+    if (target.framework.startsWith("next")) {
+      return runInitNext(opts, target);
+    }
+    if (target.framework !== "vite") {
+      console.error(`Init is not supported for ${target.framework} apps yet.`);
+      return 1;
+    }
+    initRoot = target.appRoot;
+  } catch (e) {
+    if (e instanceof PreflightError) {
+      if (discovery.frontendApps.length > 1) {
+        printWorkspaceDiscovery(discovery);
+      }
+      console.error(e.message);
+      return 1;
+    }
+    throw e;
+  }
+
+  const root = initRoot;
   const pm = detectPackageManager(root, opts.pm);
 
   if (!opts.dryRun) {
@@ -150,6 +214,11 @@ export async function runInit(opts: InitOptions): Promise<number> {
       });
     }
     return 2;
+  }
+
+  if (opts.dryRun && discovery.frontendApps.length > 1) {
+    printWorkspaceDiscovery(discovery);
+    console.log("");
   }
 
   const projectProps = buildCliTelemetryProps(pm, project);
