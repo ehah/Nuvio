@@ -16,8 +16,10 @@ export function detectPackageManager(
   return "npm";
 }
 
-/** @nuvio/next ships on its own semver until aligned with @nuvio/cli. */
-export const NUVIO_NEXT_VERSION = "0.4.0-alpha.0";
+import { NUVIO_VERSION } from "./version.js";
+
+/** Aligned with @nuvio/cli on stable releases. */
+export const NUVIO_NEXT_VERSION = NUVIO_VERSION;
 
 export function installCommand(
   pm: PackageManager,

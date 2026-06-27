@@ -1,5 +1,4 @@
 import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { findNextConfig } from "./patch-next-config.js";
 import {
   layoutHasNuvioShell,

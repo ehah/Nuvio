@@ -2,7 +2,7 @@
 
 ## Releases (npm)
 
-**Stable line:** `@nuvio/*` **1.1.0** on npm **`latest`** (Vite + Brand Kit). **v2.0** adds **Next.js** via `@nuvio/next` (monorepo-validated; npm alignment at **2.0.0** when published).
+**Stable line:** `@nuvio/*` **2.0.0** on npm **`latest`** (Vite + Next.js + Brand Kit).
 
 Before publishing: `pnpm dogfood` (Vite) and `pnpm dogfood:next` (Next). Maintainer flow: [docs/npmPublish.md](./docs/npmPublish.md). Stack matrix: [docs/mds/COMPATIBILITY.md](./docs/mds/COMPATIBILITY.md). Limits: [docs/mds/LIMITATIONS.md](./docs/mds/LIMITATIONS.md). [CHANGELOG.md](./CHANGELOG.md) tracks releases.
 

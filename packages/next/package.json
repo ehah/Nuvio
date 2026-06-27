@@ -1,6 +1,6 @@
 {
   "name": "@nuvio/next",
-  "version": "0.4.0-alpha.0",
+  "version": "2.0.0",
   "description": "Nuvio Next.js dev adapter (v2) — withNuvio, custom dev server, Brand Kit, click-to-tag.",
   "license": "MIT",
   "repository": {
@@ -36,6 +36,8 @@
   },
   "scripts": {
     "build": "tsup src/index.ts src/with-nuvio.ts src/attach-next-server.ts src/create-next-dev-server.ts --format esm,cjs --dts --clean --external @nuvio/vite-plugin --external @nuvio/vite-plugin/dev-session --external @nuvio/vite-plugin/jsx-loc --external @nuvio/shared --external @nuvio/ast-engine --external next && cp src/jsx-loc-loader.cjs dist/jsx-loc-loader.cjs",
+    "prepare": "pnpm run build",
+    "prepublishOnly": "pnpm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },

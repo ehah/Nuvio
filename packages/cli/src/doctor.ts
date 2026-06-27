@@ -6,7 +6,7 @@ import {
   type AppContext,
 } from "./app-context.js";
 import { detectPackageManager } from "./detect-pm.js";
-import { PreflightError, detectProject } from "./detect-project.js";
+import { PreflightError } from "./detect-project.js";
 import { nuvioOverlayLinkKind } from "./nuvio-deps.js";
 import { scanAppContext, scanProject } from "./project-scan.js";
 import {

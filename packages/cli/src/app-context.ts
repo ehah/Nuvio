@@ -183,7 +183,7 @@ function isFrontendCandidate(appRoot: string, packageJson: Record<string, unknow
   );
 }
 
-function frameworkLabel(framework: FrameworkKind, router: RouterKind): string {
+function frameworkLabel(framework: FrameworkKind, _router: RouterKind): string {
   switch (framework) {
     case "vite":
       return "Vite + React";

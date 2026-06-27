@@ -111,7 +111,7 @@ export default function BasicTableOne() {
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div
         data-nuvio-id="tables.basic.table"
-        className="overflow-x-auto max-w-full border border-green-300 rounded-md xl:max-w-full xl:border-0 xl:rounded-md"
+        className="overflow-x-auto max-w-full border border-purple-300 rounded-md xl:max-w-full xl:border-0 xl:rounded-md"
       >
         <Table>
           {/* Table Header */}

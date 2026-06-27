@@ -1,6 +1,6 @@
 {
   "name": "@nuvio/cli",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Nuvio CLI — Vite and Next.js onboarding and diagnostics (init, doctor, scan, stats, brand, coverage).",
   "license": "MIT",
   "repository": {

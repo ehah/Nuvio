@@ -10,7 +10,7 @@ export default function BasicTables() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h2
           data-nuvio-id="tables.page.title"
-          className="text-base font-medium text-green-600 xl:text-base xl:font-medium xl:text-purple-600 dark:text-white/90"
+          className="text-base font-medium text-purple-600 xl:text-base xl:font-medium xl:text-purple-600 dark:text-white/90"
         >
           Basic Tables
         </h2>
@@ -18,12 +18,12 @@ export default function BasicTables() {
       <div className="space-y-6">
         <div
           data-nuvio-id="tables.basic.card"
-          className="bg-white border border-green-300 rounded-md p-6 shadow-sm xl:bg-white xl:border xl:border-gray-200 xl:rounded-md xl:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
+          className="bg-white border border-purple-300 rounded-md p-6 shadow-sm xl:bg-white xl:border xl:border-gray-200 xl:rounded-md xl:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
         >
           <div className="px-6 py-5">
             <h3
               data-nuvio-id="tables.basic.title"
-              className="text-base font-medium text-green-600 xl:text-base xl:font-medium xl:text-purple-600 dark:text-white/90"
+              className="text-base font-medium text-purple-600 xl:text-base xl:font-medium xl:text-purple-600 dark:text-white/90"
             >
               Basic Table 1
             </h3>

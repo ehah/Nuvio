@@ -8,5 +8,6 @@
       "@nuvio/vite-plugin/scan": ["../vite-plugin/dist/scan.d.ts"]
     }
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"]
 }

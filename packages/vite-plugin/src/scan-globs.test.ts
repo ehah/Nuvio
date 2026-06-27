@@ -35,7 +35,7 @@ describe("buildSourceIndex (next-dogfood)", () => {
     const nextRoot = path.join(REPO_ROOT, "apps/next-dogfood");
     const r = buildSourceIndex(nextRoot, [...NUVIO_NEXT_SCAN_GLOBS]);
     expect(r.scannedFileCount).toBeGreaterThan(0);
-    expect(r.entries.some((e) => e.id === "page.title")).toBe(true);
+    expect(r.entries.some((e) => e.id === "dashboard.title")).toBe(true);
   });
 
   it("does not scan files under .next when present", () => {

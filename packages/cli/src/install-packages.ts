@@ -72,7 +72,7 @@ export function runNextInstall(
 
 function runInstallCommand(
   root: string,
-  pm: PackageManager,
+  _pm: PackageManager,
   cmd: string,
 ): { ok: boolean; message?: string } {
   const result = spawnSync(cmd, {

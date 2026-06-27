@@ -2,9 +2,13 @@
 
 All notable changes to `@nuvio/*` packages are documented here. This project follows [Semantic Versioning](https://semver.org/).
 
-**Release policy:** `@nuvio/*` **1.1.0** is the stable npm line (`latest`). **1.0.0** was the first stable release without Brand Kit.
+**Release policy:** `@nuvio/*` **2.0.0** is the stable npm line (`latest`) — Vite + Next.js + Brand Kit. **1.1.0** was the last Vite-only stable line.
 
 ## [Unreleased]
+
+## [2.0.0] — 2026-06-27
+
+Next.js support and monorepo CLI. All six publish packages aligned at **2.0.0**.
 
 ### Added — v2.0 (Next.js + monorepo)
 

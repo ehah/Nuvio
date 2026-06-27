@@ -87,6 +87,6 @@ describe("runScan", () => {
       hosts: Array<{ id: string }>;
     };
     expect(parsed.framework).toMatch(/^next-/);
-    expect(parsed.hosts.some((h) => h.id === "page.title")).toBe(true);
+    expect(parsed.hosts.some((h) => h.id === "dashboard.title")).toBe(true);
   });
 });

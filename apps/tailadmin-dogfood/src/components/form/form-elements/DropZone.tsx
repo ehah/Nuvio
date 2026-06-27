@@ -15,12 +15,12 @@ const DropzoneComponent: React.FC = () => {
   return (
     <div
       data-nuvio-id="forms.dropzone.card"
-      className="bg-white border border-green-300 rounded-md p-6 shadow-sm xl:bg-white xl:border xl:border-blue-300 xl:rounded-md xl:p-6 xl:shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+      className="bg-white border border-purple-300 rounded-md p-6 shadow-sm xl:bg-white xl:border xl:border-blue-300 xl:rounded-md xl:p-6 xl:shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
     >
       <div className="px-6 py-5">
         <h3
           data-nuvio-id="forms.dropzone.title"
-          className="text-base font-medium text-green-600 xl:text-base xl:font-medium xl:text-purple-600 dark:text-white/90"
+          className="text-base font-medium text-purple-600 xl:text-base xl:font-medium xl:text-purple-600 dark:text-white/90"
         >
           Dropzone
         </h3>
@@ -56,7 +56,7 @@ const DropzoneComponent: React.FC = () => {
               </h4>
               <span
                 data-nuvio-id="forms.dropzone.hint"
-                className="text-center mb-5 block w-full max-w-[290px] text-sm font-normal text-green-600 dark:text-gray-400"
+                className="text-center mb-5 block w-full max-w-[290px] text-sm font-normal text-purple-600 dark:text-gray-400"
               >
                 Drag and drop your PNG, JPG, WebP, SVG images here or browse
               </span>

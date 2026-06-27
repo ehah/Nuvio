@@ -13,14 +13,14 @@ export default function Badges() {
       <PageBreadcrumb pageTitle="Badges" />
       <h1
         data-nuvio-id="badges.page.title"
-        className="sr-only text-base font-medium text-green-600"
+        className="sr-only text-base font-medium text-purple-600"
       >
         Badges
       </h1>
       <div className="space-y-5 sm:space-y-6">
         <div
           data-nuvio-id="badges.light.card"
-          className="bg-white border border-green-300 rounded-md p-6 shadow-sm"
+          className="bg-white border border-purple-300 rounded-md p-6 shadow-sm"
         >
           <div className="px-6 py-5">
             <h3 className="text-base font-medium text-gray-800">
@@ -31,13 +31,13 @@ export default function Badges() {
             <div className="flex flex-wrap gap-4 sm:items-center sm:justify-center">
               <span
                 data-nuvio-id="badges.demo.primary"
-                className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700"
+                className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 text-purple-700"
               >
                 Primary
               </span>
               <span
                 data-nuvio-id="badges.demo.success"
-                className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700"
+                className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 text-purple-700"
               >
                 Success
               </span>

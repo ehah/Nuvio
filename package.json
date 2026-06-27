@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "build": "pnpm -r --filter \"!./packages/next\" --filter \"./packages/**\" run build",
+    "build": "pnpm -r --filter \"./packages/**\" run build",
     "typecheck": "pnpm -r --filter \"!./apps/next-dogfood\" run typecheck",
     "test": "pnpm -r run test",
     "dev": "pnpm build && pnpm --filter @nuvio/demo-app dev",
@@ -23,7 +23,7 @@
     "telemetry:smoke": "node scripts/telemetry-smoke.mjs",
     "posthog:verify": "node scripts/posthog-verify.mjs",
     "publish:alpha": "pnpm -r publish --filter \"./packages/*\" --access public --tag alpha",
-    "publish:stable": "pnpm -r publish --filter \"@nuvio/shared\" --filter \"@nuvio/ast-engine\" --filter \"@nuvio/vite-plugin\" --filter \"@nuvio/overlay\" --filter \"@nuvio/cli\" --filter \"@nuvio/next\" --access public"
+    "publish:stable": "pnpm build && pnpm typecheck && pnpm test && pnpm dogfood:next && pnpm -r publish --filter \"@nuvio/shared\" --filter \"@nuvio/ast-engine\" --filter \"@nuvio/vite-plugin\" --filter \"@nuvio/overlay\" --filter \"@nuvio/next\" --filter \"@nuvio/cli\" --access public"
   },
   "engines": {
     "node": ">=20"

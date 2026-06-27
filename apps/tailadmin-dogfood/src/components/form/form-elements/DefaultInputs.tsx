@@ -26,12 +26,12 @@ export default function DefaultInputs() {
   return (
     <div
       data-nuvio-id="forms.default.card"
-      className="bg-white border border-green-300 rounded-md p-6 shadow-sm xl:bg-white xl:border xl:border-blue-300 xl:rounded-md xl:p-6 xl:shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+      className="bg-white border border-purple-300 rounded-md p-6 shadow-sm xl:bg-white xl:border xl:border-blue-300 xl:rounded-md xl:p-6 xl:shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
     >
       <div className="px-6 py-5">
         <h3
           data-nuvio-id="forms.default.title"
-          className="text-base font-medium text-green-600 xl:text-base xl:font-medium xl:text-purple-600 dark:text-white/90"
+          className="text-base font-medium text-purple-600 xl:text-base xl:font-medium xl:text-purple-600 dark:text-white/90"
         >
           Default Inputs
         </h3>
@@ -57,7 +57,7 @@ export default function DefaultInputs() {
               id="inputTwo"
               data-nuvio-id="form.email.input"
               placeholder="info@gmail.com"
-              className="h-11 w-full text-sm text-gray-800 shadow-theme-xs bg-white border border-green-300 rounded-md px-4 py-2 xl:bg-white xl:border xl:border-gray-200 xl:rounded-md xl:px-4 xl:py-2 placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+              className="h-11 w-full text-sm text-gray-800 shadow-theme-xs bg-white border border-purple-300 rounded-md px-4 py-2 xl:bg-white xl:border xl:border-gray-200 xl:rounded-md xl:px-4 xl:py-2 placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
             />
           </div>
           <div>
