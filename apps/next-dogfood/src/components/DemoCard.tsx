@@ -6,7 +6,7 @@ export function DemoCard() {
     >
       <h3
         data-nuvio-id="demo.title"
-        className="text-lg font-semibold text-gray-800 xl:text-base xl:font-medium xl:text-purple-600"
+        className="text-lg font-semibold text-gray-800 xl:text-base xl:font-medium xl:text-green-600"
       >
         Product overview
       </h3>

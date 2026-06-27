@@ -7,7 +7,7 @@ interface Product {
 const tableData: Product[] = [
   {
     id: 1,
-    name: "MacBook Pro 13”",
+    name: "MacBook Pro 13.5\u201D",
     category: "Laptop",
     price: "$2399.00",
   },
@@ -33,7 +33,7 @@ export function RecentOrders() {
       <div className="mb-4 flex items-center justify-between">
         <h3
           data-nuvio-id="orders.title"
-          className="text-lg font-semibold text-gray-800 xl:text-base xl:font-medium xl:text-purple-600"
+          className="text-lg font-semibold text-gray-800 xl:text-base xl:font-medium xl:text-green-600"
         >
           Recent Orders
         </h3>
@@ -41,14 +41,14 @@ export function RecentOrders() {
           <button
             data-nuvio-id="orders.filter"
             type="button"
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 xl:bg-purple-600 xl:text-white xl:rounded-md xl:px-4 xl:py-2 hover:bg-purple-700"
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 xl:bg-slate-700 xl:text-white xl:rounded-md xl:px-4 xl:py-2 hover:bg-purple-700 hover:bg-slate-800"
           >
             Filter
           </button>
           <button
             data-nuvio-id="orders.seeAll"
             type="button"
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 xl:bg-purple-600 xl:text-white xl:rounded-md xl:px-4 xl:py-2 hover:bg-purple-700"
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 xl:bg-slate-700 xl:text-white xl:rounded-md xl:px-4 xl:py-2 hover:bg-purple-700 hover:bg-slate-800"
           >
             See all
           </button>

@@ -69,7 +69,7 @@ export default function MonthlyTarget() {
         <div className="flex justify-between">
           <div>
             <h3
-              className="text-base font-medium text-green-600 xl:text-base xl:font-medium xl:text-green-600 dark:text-white/90"
+              className="text-base font-medium text-green-600 xl:text-base xl:font-medium xl:text-purple-600 dark:text-white/90"
               data-nuvio-id="target.monthly.title"
             >
               Monthly Target 101

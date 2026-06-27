@@ -19,7 +19,7 @@ export default function FormElements() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h2
           data-nuvio-id="form.page.title"
-          className="text-base font-medium text-green-600 xl:text-base xl:font-medium xl:text-green-600 dark:text-white/90"
+          className="text-base font-medium text-green-600 xl:text-base xl:font-medium xl:text-purple-600 dark:text-white/90"
         >
           Form Elements
         </h2>

@@ -6,7 +6,7 @@ export function ChartCard() {
     >
       <h3
         data-nuvio-id="chart.sales.title"
-        className="text-lg font-semibold text-gray-800 xl:text-base xl:font-medium xl:text-purple-600"
+        className="text-lg font-semibold text-gray-800 xl:text-base xl:font-medium xl:text-green-600"
       >
         Sales overview
       </h3>

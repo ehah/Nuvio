@@ -6,7 +6,7 @@ export function MonthlyTargetCard() {
     >
       <h3
         data-nuvio-id="target.monthly.title"
-        className="text-lg font-semibold text-gray-800 xl:text-base xl:font-medium xl:text-purple-600"
+        className="text-lg font-semibold text-gray-800 xl:text-base xl:font-medium xl:text-green-600"
       >
         Monthly target
       </h3>
@@ -20,7 +20,7 @@ export function MonthlyTargetCard() {
         data-nuvio-id="target.monthly.value"
         className="mt-4 text-3xl font-semibold text-gray-900"
       >
-        $45,231
+        $45,231 00
       </p>
     </div>
   );

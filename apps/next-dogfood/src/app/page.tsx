@@ -8,7 +8,7 @@ export default function HomePage() {
     <main className="mx-auto max-w-6xl space-y-6 p-6">
       <h1
         data-nuvio-id="dashboard.title"
-        className="text-2xl font-semibold text-gray-900 xl:text-base xl:font-medium xl:text-purple-600"
+        className="text-2xl font-semibold text-gray-900 xl:text-base xl:font-medium xl:text-green-600"
       >
         Next.js dogfood dashboard
       </h1>

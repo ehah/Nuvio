@@ -1,7 +1,7 @@
 {
   "name": "@nuvio/next",
   "version": "0.4.0-alpha.0",
-  "description": "Nuvio Next.js dev adapter — attach WebSocket + source index to a custom dev server.",
+  "description": "Nuvio Next.js dev adapter (v2) — withNuvio, custom dev server, Brand Kit, click-to-tag.",
   "license": "MIT",
   "repository": {
     "type": "git",

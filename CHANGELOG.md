@@ -23,6 +23,8 @@ All notable changes to `@nuvio/*` packages are documented here. This project fol
 
 - Next `next.config` CJS `require` via `@nuvio/next/with-nuvio` dual ESM/CJS build.
 - Hydration mismatch on Nuvio chip in Next App Router layouts.
+- Brand Kit cross-page branding on Next — route-aware PCC fetch via `usePathname()` in `NuvioNextShell`.
+- Next overlay styling — import `@nuvio/overlay/style.css` in root layout; light-DOM chrome mount.
 
 ## [1.1.0] — 2026-06-14
 

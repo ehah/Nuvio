@@ -54,7 +54,7 @@ export default function EcommerceMetrics() {
               data-nuvio-id="metric.orders.label"
               className="text-sm font-normal text-green-600 xl:text-sm xl:font-normal xl:text-gray-700 dark:text-gray-400"
             >
-              Orders
+              Customer Orders
             </span>
             <h4
               data-nuvio-id="metric.orders.value"

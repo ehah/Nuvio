@@ -12,7 +12,7 @@ export default function TextAreaInput() {
       <div className="px-6 py-5">
         <h3
           data-nuvio-id="forms.textarea.title"
-          className="text-base font-medium text-green-600 xl:text-base xl:font-medium xl:text-green-600 dark:text-white/90"
+          className="text-base font-medium text-green-600 xl:text-base xl:font-medium xl:text-purple-600 dark:text-white/90"
         >
           Textarea input field
         </h3>

@@ -7,9 +7,10 @@ Define a project **Brand Kit** and apply it by category across pages, or click i
 [![npm @nuvio/cli](https://img.shields.io/npm/v/@nuvio/cli?label=%40nuvio%2Fcli%201.1.0)](https://www.npmjs.com/package/@nuvio/cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node 20+](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](package.json)
-[![Vite 5–8](https://img.shields.io/badge/Vite-5%20%7C%206%20%7C%208-646cff)](#vite--tailwind-coverage)
-[![Tailwind 3–4](https://img.shields.io/badge/Tailwind-3.x%20%7C%204.x-38bdf8)](#vite--tailwind-coverage)
-[![React 18–19](https://img.shields.io/badge/React-18%20%7C%2019-61dafb)](#vite--tailwind-coverage)
+[![Vite 5–8](https://img.shields.io/badge/Vite-5%20%7C%206%20%7C%208-646cff)](#stack-coverage)
+[![Next.js 14–15](https://img.shields.io/badge/Next.js-14%20%7C%2015-000000)](#stack-coverage)
+[![Tailwind 3–4](https://img.shields.io/badge/Tailwind-3.x%20%7C%204.x-38bdf8)](#stack-coverage)
+[![React 18–19](https://img.shields.io/badge/React-18%20%7C%2019-61dafb)](#stack-coverage)
 
 **Published packages (2.0.0-alpha):** `@nuvio/cli` · `@nuvio/vite-plugin` · `@nuvio/next` · `@nuvio/overlay` · `@nuvio/shared` · `@nuvio/ast-engine`
 
@@ -33,20 +34,20 @@ Categories: **card**, **heading**, **text**, **button**, **table**, **form**, **
 
 <img src="docs/assets/nuvio-element16.gif" width="100%" alt="nuvio demo: Edit on → click an element → Preview Changes → Apply to Code" />
 
-**Try Next.js dogfood:**
+**Try Next.js (App Router + Brand Kit):**
 
 ```bash
 pnpm install
 pnpm dev:next
 ```
 
-Open `http://localhost:3001` → nuvio chip → **Edit on**. See [docs/mds/NEXT.md](docs/mds/NEXT.md).
+Open `http://localhost:3001` → nuvio chip → **Edit on** → **Brand Kit**. Routes: `/` (dashboard) · `/forms` · `/badges`. See [apps/next-dogfood/README.md](apps/next-dogfood/README.md) and [docs/mds/NEXT.md](docs/mds/NEXT.md).
 
-**Try Brand Kit (Vite, recommended):**
+**Try Brand Kit (Vite + TailAdmin):**
 
 ```bash
 pnpm install
-pnpm build && pnpm dev:tailadmin
+pnpm dev:tailadmin
 ```
 
 Open the printed URL (default `http://localhost:5173/`) → nuvio chip → **Edit on** → **Brand Kit** tab. See [apps/tailadmin-dogfood/README.md](apps/tailadmin-dogfood/README.md) for per-page category counts and PCC hosts.
@@ -65,7 +66,7 @@ Demo assets: [nuvio-brand-kit26.gif](docs/assets/nuvio-brand-kit26.gif) · [nuvi
 
 ## Quick Start
 
-**You need:** React · Vite · Tailwind · Node 20+
+**You need:** React · Tailwind · Node 20+ · **Vite** or **Next.js**
 
 In your project folder (`package.json` + `vite.config` or `next.config`):
 
@@ -102,7 +103,7 @@ More: [CHANGELOG.md](CHANGELOG.md) · [Next.js guide](docs/mds/NEXT.md) · [Mono
 
 ---
 
-## Vite + Tailwind + Next.js coverage
+## Stack coverage
 
 | Area | v2.0 support |
 | ---- | ------------- |
@@ -134,15 +135,15 @@ See [examples/README.md](examples/README.md).
 
 After `nuvio init`, nuvio:
 
-1. Installs `@nuvio/vite-plugin` and `@nuvio/overlay`
-2. Registers the Vite plugin (dev server only)
-3. Mounts the nuvio overlay in your app shell
+1. Installs framework packages (`@nuvio/vite-plugin` or `@nuvio/next`) and `@nuvio/overlay`
+2. Wires the dev adapter (Vite plugin or Next custom `server.js` + `withNuvio()`)
+3. Mounts the nuvio overlay in your app shell (`NuvioDevShell` or `NuvioNextShell`)
 4. Adds a starter editable region (`page.title` on your first heading)
 5. Opens the **Brand Kit** tab by default — category chips, presets, **Save Brand**, **Validate**, **Apply**
 6. Lets you click elements and edit in the browser — tagged or **Make Editable** (click-to-tag)
 7. Generates source-backed patches and writes them to your files
 
-**Preview before apply.** **Undo** after apply. **No production bundle** — the overlay renders nothing when `import.meta.env.DEV` is false.
+**Preview before apply.** **Undo** after apply. **No production bundle** — overlay shells render nothing when `NODE_ENV=production` (Vite: `import.meta.env.DEV`; Next: production guard in `NuvioNextShell`).
 
 Instrument hosts with **`data-nuvio-id="unique.name"`** on patchable DOM nodes (literal `className` on the same element for Brand Kit bulk apply). Optional [PCC manifests](apps/tailadmin-dogfood/nuvio/pages/) declare which hosts belong to each brand category per route.
 
@@ -158,7 +159,7 @@ Instrument hosts with **`data-nuvio-id="unique.name"`** on patchable DOM nodes (
 
 **Cross-page:** save once, then on each route choose a category → **Validate** → **Apply**. Validate is enabled only after **Save Brand**; Apply only after a successful Validate for that category on that page.
 
-Dogfood reference: [apps/tailadmin-dogfood/README.md](apps/tailadmin-dogfood/README.md)
+Dogfood references: [TailAdmin (Vite)](apps/tailadmin-dogfood/README.md) · [Next.js](apps/next-dogfood/README.md)
 
 ---
 
@@ -186,9 +187,9 @@ Details: [CHANGELOG.md](CHANGELOG.md) (telemetry entries under 0.5.4+)
 
 **Works today**
 
-- React 18 / 19 · Vite 5, 6, 8 · Tailwind 3.x / 4.x
-- Local dev only (`pnpm dev` / `vite dev`)
-- Element editing + Brand Kit bulk apply for patchable hosts
+- React 18 / 19 · Vite 5, 6, 8 · **Next.js 14 / 15** (App Router + Pages Router) · Tailwind 3.x / 4.x
+- Local dev only (`vite dev` or Next custom dev server from `nuvio init`)
+- Element editing + Brand Kit bulk apply for patchable hosts on **both Vite and Next**
 
 **Editing constraints**
 
@@ -203,8 +204,8 @@ Details: [CHANGELOG.md](CHANGELOG.md) (telemetry entries under 0.5.4+)
 
 **On the roadmap**
 
-- Next.js `nuvio init` (experimental `@nuvio/next` in monorepo)
 - Apply brand to all pages in one action (Approach 2)
+- Next.js Turbopack dev parity for click-to-tag
 
 **Not planned near-term**
 
@@ -215,13 +216,21 @@ Details: [CHANGELOG.md](CHANGELOG.md) (telemetry entries under 0.5.4+)
 
 ## Advanced setup
 
-Use this if you skip the CLI or need to wire nuvio by hand.
+Use this if you skip the CLI or need to wire nuvio by hand. For Next.js, prefer [docs/mds/NEXT.md](docs/mds/NEXT.md).
 
-### Manual install
+### Manual install (Vite)
 
 ```bash
 pnpm add -D @nuvio/vite-plugin @nuvio/overlay
 ```
+
+### Manual install (Next.js)
+
+```bash
+pnpm add -D @nuvio/next @nuvio/overlay
+```
+
+Then add `withNuvio()` to `next.config`, a custom `server.js` with `createNuvioNextDevServer()`, and `NuvioNextShell` from `@nuvio/overlay/next` in your root layout. Full steps: [docs/mds/NEXT.md](docs/mds/NEXT.md).
 
 ### Register the Vite plugin
 
@@ -248,7 +257,7 @@ nuvio({
 });
 ```
 
-### Mount the dev shell
+### Mount the dev shell (Vite)
 
 ```tsx
 // e.g. App.tsx
@@ -266,6 +275,27 @@ export default function App() {
 
 `NuvioDevShell` returns `null` in production builds. The Vite plugin runs only on `vite dev`.
 
+### Mount the dev shell (Next.js)
+
+```tsx
+// app/layout.tsx
+import "@nuvio/overlay/style.css";
+import { NuvioNextShell } from "@nuvio/overlay/next";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        {children}
+        <NuvioNextShell />
+      </body>
+    </html>
+  );
+}
+```
+
+`NuvioNextShell` is client-only and returns `null` in production. Requires custom dev server — see [NEXT.md](docs/mds/NEXT.md).
+
 ### Instrument hosts
 
 Put stable **`data-nuvio-id="your.region.id"`** on JSX you want to edit or brand. For Brand Kit bulk apply, use a **literal** `className` on the same native element (see dogfood form sections).
@@ -282,7 +312,9 @@ Optional: add `nuvio/pages/<page>.pcc.yaml` and run `nuvio coverage verify --pag
 | **Apply greyed out (Edit tab)** | Select an id’d element; run **Preview Changes** first |
 | **Validate greyed out (Brand Kit)** | **Save Brand** first; pick a category with hosts on the page |
 | **Apply greyed out (Brand Kit)** | Run **Validate** for the active category first |
-| **Category count too low** | Add literal `data-nuvio-id` on native elements; declare hosts in PCC — see [dogfood README](apps/tailadmin-dogfood/README.md) |
+| **Category count too low** | Add literal `data-nuvio-id` on native elements; declare hosts in PCC — see [TailAdmin](apps/tailadmin-dogfood/README.md) or [Next dogfood](apps/next-dogfood/README.md) |
+| **Brand Kit wrong page (Next)** | Use `nuvio init` wiring (`NuvioNextShell` + custom `server.js`); restart dev after route changes |
+| **No chip / no WS (Next)** | Run `node server.js` (not plain `next dev`); check `withNuvio()` in `next.config` |
 
 More: [CHANGELOG.md](CHANGELOG.md) · [CONTRIBUTING.md](CONTRIBUTING.md)
 
@@ -296,8 +328,11 @@ More: [CHANGELOG.md](CHANGELOG.md) · [CONTRIBUTING.md](CONTRIBUTING.md)
 | Stack | Supported |
 | ----- | --------- |
 | Vite | 5.4+, 6.x, 8.x |
+| Next.js | 14.x, 15.x (App Router + Pages Router; webpack dev) |
 | React | 18.3+, 19.x |
 | Tailwind | 3.x, 4.x |
+
+Full matrix: [docs/mds/COMPATIBILITY.md](docs/mds/COMPATIBILITY.md)
 
 Overlay CSS is self-contained — you do **not** add `@nuvio/overlay` to Tailwind `content`.
 
@@ -312,7 +347,9 @@ For contributors — not required to use nuvio in your app.
 | [CHANGELOG.md](CHANGELOG.md) | Releases and notable changes |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Monorepo layout and dev loop |
 | [examples/README.md](examples/README.md) | Example apps + `v10:acceptance` |
-| [apps/tailadmin-dogfood/README.md](apps/tailadmin-dogfood/README.md) | Brand Kit dogfood, PCC, instrumented ids |
+| [apps/tailadmin-dogfood/README.md](apps/tailadmin-dogfood/README.md) | Vite Brand Kit dogfood, PCC, instrumented ids |
+| [apps/next-dogfood/README.md](apps/next-dogfood/README.md) | Next.js App Router Brand Kit dogfood |
+| [docs/mds/NEXT.md](docs/mds/NEXT.md) | Next.js integration guide |
 
 ### Monorepo setup
 
@@ -325,7 +362,8 @@ pnpm build
 ### Demo apps
 
 ```bash
-pnpm dev:tailadmin          # Brand Kit + TailAdmin (port 5173)
+pnpm dev:tailadmin          # Vite Brand Kit + TailAdmin (port 5173)
+pnpm dev:next               # Next.js Brand Kit dogfood (port 3001)
 pnpm --filter @nuvio/demo-app dev   # Element editing demo (port 5174)
 pnpm dev                    # build packages, then demo-app
 ```
@@ -338,14 +376,16 @@ pnpm dev                    # build packages, then demo-app
 | `pnpm typecheck` | Typecheck packages and apps |
 | `pnpm test` | Run package tests |
 | `pnpm dogfood` | Build + typecheck + test + demo production build |
-| `pnpm dev:tailadmin` | TailAdmin dogfood dev server |
+| `pnpm dev:tailadmin` | Vite TailAdmin dogfood dev server |
+| `pnpm dev:next` | Next.js dogfood dev server |
+| `pnpm dogfood:next` | Next.js production build smoke |
 | `pnpm coverage:dogfood` | PCC verify all tailadmin pages |
 | `pnpm brand:dogfood` | Brand scan all tailadmin pages |
 | `pnpm brand:apply:dogfood` | CLI brand apply (dogfood) |
 | `pnpm v10:acceptance` | v1.0 gate: init + doctor + stats on examples |
 | `pnpm test:cli` | CLI test suite |
 | `pnpm telemetry:smoke` | PostHog CLI smoke (maintainers) |
-| `pnpm publish:stable` | Publish five `@nuvio/*` packages to npm `latest` |
+| `pnpm publish:stable` | Publish six `@nuvio/*` packages to npm `latest` |
 
 ---
 
@@ -361,4 +401,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 **Repository:** [github.com/ehah/Nuvio](https://github.com/ehah/Nuvio) · **License:** MIT
 
-**Release notes template:** [.github/release-notes/v1.0.0.md](.github/release-notes/v1.0.0.md)
+**Release notes template:** [.github/release-notes/v2.0.0.md](.github/release-notes/v2.0.0.md)

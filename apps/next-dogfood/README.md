@@ -18,7 +18,7 @@ Open [http://localhost:3001](http://localhost:3001).
 | `/forms` | `forms` | card, heading, text, form |
 | `/badges` | `badges` | card, heading, badge |
 
-Navigate between routes using the top nav, then use **Brand Kit** → pick a category → **Validate** → **Apply** per page.
+Navigate between routes using the top nav, then use **Brand Kit** → pick a category → **Validate** → **Apply** per page. The saved brand in `nuvio/brand.json` is shared; each route loads its own PCC manifest for category host counts.
 
 ## Config
 
